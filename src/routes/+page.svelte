@@ -1,51 +1,9 @@
 <script>
   import Dice from "../components/dice.svelte";
   import Face from "../components/face.svelte";
+  import { testDice } from "$lib/dice"
 
-  const faces = [
-    [
-      { color: "blue" },
-      { color: "red" },
-      { color: "green" },
-      { color: "white" },
-    ],
-    [
-      { color: "blue" },
-      { color: "blue" },
-      { color: "green" },
-      { color: "white" },
-    ],
-    [
-      { color: "blue" },
-      { color: "red" },
-      { color: "red" },
-      { color: "white" },
-    ],
-    [
-      { color: "blue" },
-      { color: "red" },
-      { color: "green" },
-      { color: "green" },
-    ],
-    [
-      { color: "white" },
-      { color: "red" },
-      { color: "green" },
-      { color: "white" },
-    ],
-    [
-      { color: "blue" },
-      { color: "red" },
-      { color: "green" },
-      { color: "white" },
-    ],
-    [
-      { color: "blue" },
-      { color: "red" },
-      { color: "green" },
-      { color: "white" },
-    ],
-  ]
+  const faces = testDice;
 </script>
 
 
