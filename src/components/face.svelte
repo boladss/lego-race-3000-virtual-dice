@@ -1,14 +1,12 @@
 <script>
-  import Piece from "./piece.svelte";
   let { pieces } = $props();
 </script>
 
-<!-- <div class="size-32 bg-black content-center align-middle justify-center"> -->
-<div class="size-fit bg-black p-2 rounded-xl">
-  <div class="grid grid-cols-2 gap-2">
-    <Piece piece={pieces[0]} />
-    <Piece piece={pieces[1]} />
-    <Piece piece={pieces[2]} />
-    <Piece piece={pieces[3]} />
+<div class="size-fit p-4 rounded-2xl bg-gray-900">
+  <div class="grid grid-cols-2 grid-rows-2 shadow-[0_0_10px_0px]">
+    <div class="size-16 shadow-md" style:background-color={pieces[0].color}></div>
+    <div class="size-16 shadow-md" style:background-color={pieces[1].color}></div>
+    <div class="size-16 shadow-md" style:background-color={pieces[2].color}></div>
+    <div class="size-16 shadow-md" style:background-color={pieces[3].color}></div>
   </div>
 </div>
