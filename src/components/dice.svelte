@@ -1,5 +1,5 @@
 <script>
-  import Face from "./face.svelte";
+  import Face from "./Face.svelte";
   let { faces } = $props();
 </script>
 
