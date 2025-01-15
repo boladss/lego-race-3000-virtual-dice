@@ -1,17 +1,40 @@
-<script>
+<script lang="ts">
   import Dice from "../components/Dice.svelte";
   import Face from "../components/Face.svelte";
   import { testDice } from "$lib/dice"
+  import { PLAYER_NAMES, PLAYER_COLORS, Player } from "$lib/types"
+  import { type GamePiece, EmptyPiece, MovementPiece, SpecialPiece } from "$lib/types";
 
-  const dice = testDice;
+  let dice: Face[] = [];
   
-  let players = [];
-  const playerColors = ["red", "green", "blue", "white"];
+  let selectedPlayers: string[] = [];
   
   let gameStarted = false;
   
   function configGame() {
-    if (players.length > 0) {
+    if (selectedPlayers.length > 0) {
+      // Generate players from checklist
+      let players: Player[] = [];
+      for (let playerColor of selectedPlayers) {
+        // Create new player with 7 pieces (default)
+        let player = new Player(playerColor, 7);
+        players.push(player);
+      }
+      console.log(players);
+
+      // Generate dice faces
+      for (let i = 0; i < 6; i++) {
+        let face: GamePiece[] = [];
+
+        for (let j = 0; j < 4; j++) {
+          let emptyPiece: GamePiece = new EmptyPiece();
+          face.push(emptyPiece);
+        }
+
+        dice.push(face as Face);
+      }
+      console.log(dice);
+
       gameStarted = true;
     }
   };
@@ -37,10 +60,12 @@
 
     <form class="flex flex-col items-start mt-4">
 
-    {#each playerColors as color}
+    {#each PLAYER_NAMES as player}
       <label class="flex items-center">
-        <input type="checkbox" bind:group={players} value={color} />
-        <span class="ml-2 text-{color}-500">{color.charAt(0).toUpperCase() + color.slice(1)}</span>
+        <input type="checkbox" bind:group={selectedPlayers} value={player} />
+        <span class={`ml-2 ${PLAYER_COLORS[player].textColor} font-semibold`}>
+          {player.charAt(0).toUpperCase() + player.slice(1)}
+        </span>
       </label>
     {/each}
     </form>
