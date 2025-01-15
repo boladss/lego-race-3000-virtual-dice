@@ -15,7 +15,6 @@
       {#if piece.type === "MovementPiece"}
         <div 
           class="size-16 shadow-md {piece.getColor()} {interactable ? 'hover:shadow-[0_0_5px_5px_red] hover:z-10' : ''}" 
-          style:background-color={PLAYER_COLORS[piece.player.name].bgColor}
         >
         </div>
       {:else}
