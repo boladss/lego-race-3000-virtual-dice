@@ -1,9 +1,28 @@
-export type Race3000Game = {
-  players: Player[]
-  currentTurn: Player
-  dice: Dice
+export class Race3000Game {
+  private currentPlayer: Player;
+
+  constructor(
+    public players: Player[],
+    public dice: Dice
+  ) {
+    this.currentPlayer = players[0];
+  }
+
+  // Set next player's turn
+  nextPlayer(): void {
+    const currentIndex = this.players.indexOf(this.currentPlayer);
+    const nextIndex = (currentIndex + 1) % this.players.length;
+
+    this.currentPlayer = this.players[nextIndex];
+  }
+
+  // Remove a player from the game (typically as they've already finished the lap)
+  removePlayer(playerToRemove: Player): void {
+    this.players = this.players.filter((player) => player !== playerToRemove);
+  }
 }
 
+// Possible player names
 export const PLAYER_NAMES = ["red", "green", "blue", "white"];
 
 // Look-up table for rendering player colors
@@ -37,7 +56,7 @@ export type Face = {
   pieces: Piece[]
 }
 
-enum PieceType {
+export enum PieceType {
   Empty = "Empty",
   Movement = "Movement",
   Special = "Special",
@@ -49,7 +68,7 @@ There are two main types of dice pieces:
 (2) Special pieces --- does NOT correspond to a player (turbo, shortcut pieces)
 */
 export abstract class Piece {
-  constructor(type: PieceType) {}
+  constructor(public type: PieceType) {}
   abstract getColor(): string;
 }
 
