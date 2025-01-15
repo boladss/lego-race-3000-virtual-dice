@@ -4,16 +4,16 @@
   import { PLAYER_NAMES, PLAYER_COLORS, Player, Race3000Game, MovementPiece } from "$lib/types"
   import { type Dice, type Face, type GamePiece, EmptyPiece } from "$lib/types";
 
-  let game: Race3000Game;
+  let game: Race3000Game = $state({} as Race3000Game);
 
   let dice: Dice = [];
-  let displayFace: Face = [];
+  let currentDiceFace: number = $state(0);
   
   // let selectedPlayers: string[] = [];
-  let selectedPlayers: string[] = ["red", "green", "blue", "white"];
+  let selectedPlayers: string[] = $state(["red", "green", "blue", "white"]);
   
   // let gameStarted: boolean = false;
-  let gameStarted: boolean = true;
+  let gameStarted: boolean = $state(true);
   configGame();
   
   function configGame() {
@@ -48,7 +48,6 @@
       }
 
       game = new Race3000Game(players, dice);
-      displayFace = dice[0];
       gameLoop();
     }
   };
@@ -60,8 +59,10 @@
   }
 
   function handleDiceRoll() {
-    const rolledFace = game.rollDice();
-    displayFace = rolledFace;
+    game.rollDice();
+    currentDiceFace = game.currentDiceFace;
+    game.nextPlayer();
+    console.log("CURRENT PLAYER: ", game.currentPlayer);
   }
 </script>
 
@@ -73,17 +74,25 @@
     
     <!-- Face display -->
     <div class="mb-10">
-      <FaceComponent pieces={displayFace} large={true}/>
+      <FaceComponent game={game} index={currentDiceFace} large={true}/>
     </div>
 
-    <button 
-      onclick={() => handleDiceRoll()}
-      class="mb-10 p-4 bg-gray-200 rounded-lg hover:shadow-xl"
-      >
-      Roll
-    </button>
+    <div class="container flex flex-col m-auto items-center">
+      <h2>Debug Menu</h2>
+      <div>
+        Current Player: {game.currentPlayer.name}
+
+      </div>
+
+      <button 
+        onclick={() => handleDiceRoll()}
+        class="mb-10 p-4 bg-gray-200 rounded-lg hover:shadow-xl"
+        >
+        Roll
+      </button>
+    </div>
     
-    <DiceComponent faces={dice}/>
+    <DiceComponent game={game} />
     
 
   <!-- Start a new game -->

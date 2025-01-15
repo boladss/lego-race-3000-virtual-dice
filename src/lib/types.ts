@@ -1,11 +1,13 @@
 export class Race3000Game {
   public currentPlayer: Player;
+  public currentDiceFace: number;
 
   constructor(
     public players: Player[],
     public dice: Dice
   ) {
     this.currentPlayer = players[0];
+    this.currentDiceFace = 0;
   }
 
   // Set next player's turn
@@ -22,11 +24,16 @@ export class Race3000Game {
   }
 
   // Roll the dice, return a face
-  rollDice(): Face {
+  rollDice(): void {
     const randomIndex = Math.floor(Math.random() * this.dice.length);
-    const rolledFace = this.dice[randomIndex];
-    console.log(`Rolled face: ${randomIndex} ${rolledFace}`);
-    return rolledFace;
+    console.log("ROLLED: ", randomIndex);
+    this.currentDiceFace = randomIndex;
+  }
+
+  replacePieceOnCurrentFace(pieceIndex: number): void {
+    const movementPiece = new MovementPiece(this.currentPlayer);
+    this.dice[this.currentDiceFace][pieceIndex] = movementPiece;
+    return;
   }
 }
 

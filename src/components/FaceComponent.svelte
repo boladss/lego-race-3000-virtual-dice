@@ -1,21 +1,31 @@
-<script>
-  import { PieceType } from "$lib/types";
+<script lang="ts">
+  import { PieceType, type GamePiece } from "$lib/types";
   
-  let { pieces, large = false } = $props();
+  let { game, index, large = false } = $props();
   
   let interactable = true;
+  let displayPieces = $state(game.dice[index]);
+
+  function selectPieceHandler(piece: GamePiece, pieceIndex: number) {
+    console.log(`PIECE:${piece} ${pieceIndex}`);
+    game.replacePieceOnCurrentFace(pieceIndex);
+    displayPieces = game.dice[index];
+  }
 </script>
 
 <!-- Print face on its own -->
 {#if large === true}
 <div class="size-fit p-4 rounded-2xl bg-gray-900">
   <div class="grid grid-cols-2 grid-rows-2 shadow-[0_0_10px_0px]">
-    {#each pieces as piece}
+    <!-- TODO: Fix logic for rendering pieces -->
+    {#each displayPieces as piece, index}
       {#if piece.type === PieceType.Empty}
-        <div 
+        <button 
+          onclick={() => selectPieceHandler(piece, index)}
           class="size-16 shadow-md {piece.getColor()} {interactable ? 'hover:shadow-[0_0_5px_5px_red] hover:z-10' : ''}" 
+          aria-label="Piece"
         >
-        </div>
+        </button>
       {:else}
         <div 
           class="size-16 shadow-md {piece.getColor()}" 
@@ -30,7 +40,7 @@
 {:else}
 <div class="size-fit p-2 rounded-xl bg-gray-900">
   <div class="grid grid-cols-2 grid-rows-2 shadow-[0_0_5px_0px]">
-    {#each pieces as piece}
+    {#each displayPieces as piece}
       <div class="size-8 shadow-sm {piece.getColor()}"></div>
     {/each}
   </div>
