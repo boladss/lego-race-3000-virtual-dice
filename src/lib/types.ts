@@ -1,5 +1,5 @@
 export class Race3000Game {
-  private currentPlayer: Player;
+  public currentPlayer: Player;
 
   constructor(
     public players: Player[],
@@ -19,6 +19,14 @@ export class Race3000Game {
   // Remove a player from the game (typically as they've already finished the lap)
   removePlayer(playerToRemove: Player): void {
     this.players = this.players.filter((player) => player !== playerToRemove);
+  }
+
+  // Roll the dice, return a face
+  rollDice(): Face {
+    const randomIndex = Math.floor(Math.random() * this.dice.length);
+    const rolledFace = this.dice[randomIndex];
+    console.log(`Rolled face: ${randomIndex} ${rolledFace}`);
+    return rolledFace;
   }
 }
 

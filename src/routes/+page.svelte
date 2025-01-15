@@ -1,43 +1,68 @@
 <script lang="ts">
   import DiceComponent from "../components/DiceComponent.svelte";
   import FaceComponent from "../components/FaceComponent.svelte";
-  import { PLAYER_NAMES, PLAYER_COLORS, Player, Race3000Game } from "$lib/types"
+  import { PLAYER_NAMES, PLAYER_COLORS, Player, Race3000Game, MovementPiece } from "$lib/types"
   import { type Dice, type Face, type GamePiece, EmptyPiece } from "$lib/types";
 
+  let game: Race3000Game;
+
   let dice: Dice = [];
+  let displayFace: Face = [];
   
-  let selectedPlayers: string[] = [];
+  // let selectedPlayers: string[] = [];
+  let selectedPlayers: string[] = ["red", "green", "blue", "white"];
   
-  let gameStarted = false;
+  // let gameStarted: boolean = false;
+  let gameStarted: boolean = true;
+  configGame();
   
   function configGame() {
-    if (selectedPlayers.length > 0) {
+    // if (selectedPlayers.length > 0) {
+    if (true) {
       // Generate players from checklist
       let players: Player[] = [];
       for (let playerColor of selectedPlayers) {
         // Create new player with 7 pieces (default)
-        let player = new Player(playerColor, 7);
+        let player: Player = new Player(playerColor, 7);
         players.push(player);
       }
-      console.log(players);
 
       // Generate dice faces
       for (let i = 0; i < 6; i++) {
         let face: Face = [];
-
+        
         for (let j = 0; j < 4; j++) {
-          let emptyPiece: GamePiece = new EmptyPiece();
-          face.push(emptyPiece);
+
+          let piece: GamePiece;
+          const randomIndex: number = Math.floor(Math.random() * (players.length + 1));
+          if (randomIndex > 3) {
+            piece = new EmptyPiece();
+          } else {
+            const rolledPlayer = players[randomIndex]
+            piece = new MovementPiece(rolledPlayer);
+          }
+          face.push(piece);
         }
 
         dice.push(face);
       }
-      console.log(dice);
 
-      let game = new Race3000Game(players, dice);
-      gameStarted = true;
+      game = new Race3000Game(players, dice);
+      displayFace = dice[0];
+      gameLoop();
     }
   };
+
+  function gameLoop() {
+    gameStarted = true;
+
+    console.log(game.currentPlayer);
+  }
+
+  function handleDiceRoll() {
+    const rolledFace = game.rollDice();
+    displayFace = rolledFace;
+  }
 </script>
 
 
@@ -48,8 +73,15 @@
     
     <!-- Face display -->
     <div class="mb-10">
-      <FaceComponent pieces={dice[0]} large={true}/>
+      <FaceComponent pieces={displayFace} large={true}/>
     </div>
+
+    <button 
+      onclick={() => handleDiceRoll()}
+      class="mb-10 p-4 bg-gray-200 rounded-lg hover:shadow-xl"
+      >
+      Roll
+    </button>
     
     <DiceComponent faces={dice}/>
     
