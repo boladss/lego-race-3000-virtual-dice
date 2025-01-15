@@ -1,11 +1,10 @@
 <script lang="ts">
-  import Dice from "../components/Dice.svelte";
-  import Face from "../components/Face.svelte";
-  import { testDice } from "$lib/dice"
-  import { PLAYER_NAMES, PLAYER_COLORS, Player } from "$lib/types"
-  import { type GamePiece, EmptyPiece, MovementPiece, SpecialPiece } from "$lib/types";
+  import DiceComponent from "../components/DiceComponent.svelte";
+  import FaceComponent from "../components/FaceComponent.svelte";
+  import { PLAYER_NAMES, PLAYER_COLORS, Player, Race3000Game } from "$lib/types"
+  import { type Dice, type Face, type GamePiece, EmptyPiece } from "$lib/types";
 
-  let dice: Face[] = [];
+  let dice: Dice = [];
   
   let selectedPlayers: string[] = [];
   
@@ -24,17 +23,18 @@
 
       // Generate dice faces
       for (let i = 0; i < 6; i++) {
-        let face: GamePiece[] = [];
+        let face: Face = [];
 
         for (let j = 0; j < 4; j++) {
           let emptyPiece: GamePiece = new EmptyPiece();
           face.push(emptyPiece);
         }
 
-        dice.push(face as Face);
+        dice.push(face);
       }
       console.log(dice);
 
+      let game = new Race3000Game(players, dice);
       gameStarted = true;
     }
   };
@@ -48,10 +48,10 @@
     
     <!-- Face display -->
     <div class="mb-10">
-      <Face pieces={dice[0]} large={true}/>
+      <FaceComponent pieces={dice[0]} large={true}/>
     </div>
     
-    <Dice faces={dice}/>
+    <DiceComponent faces={dice}/>
     
 
   <!-- Start a new game -->

@@ -48,13 +48,8 @@ export class Player {
   }
 }
 
-export type Dice = {
-  faces: Face[]
-}
-
-export type Face = {
-  pieces: Piece[]
-}
+export type Dice = Face[];
+export type Face = Piece[];
 
 export enum PieceType {
   Empty = "Empty",

@@ -1,6 +1,5 @@
 <script>
-  import { PLAYER_COLORS } from "$lib/types";
-  import { PieceType, EmptyPiece, MovementPiece, SpecialPiece } from "$lib/types";
+  import { PieceType } from "$lib/types";
   
   let { pieces, large = false } = $props();
   
