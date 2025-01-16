@@ -2,7 +2,6 @@
   import FaceComponent from "../components/FaceComponent.svelte";
   import { PLAYER_NAMES, PLAYER_COLORS, Player, MovementPiece } from "$lib/types"
   import { type Dice, type Face, type GamePiece, EmptyPiece } from "$lib/types";
-	import { getNameOfDeclaration } from "typescript";
 
   export class Race3000Game {
     public players: Player[];
@@ -10,34 +9,36 @@
     public currentPlayer: Player = $state({} as Player);
     public currentDiceFace: number = $state(0);
 
+    // Initialize game with list of players and the initial dice
     constructor(players: Player[], dice: Dice) {
       this.players = players;
       this.dice = dice;
       this.currentPlayer = players[0];
     }
 
-    // Set next player's turn
+    // Function to set next player's turn
     nextPlayer(): void {
       const currentIndex = this.players.indexOf(this.currentPlayer);
       const nextIndex = (currentIndex + 1) % this.players.length;
-
       this.currentPlayer = this.players[nextIndex];
     }
 
-    // Remove a player from the game (typically as they've already finished the lap)
+    // Function to remove a player from the game (typically as they've already finished the lap)
     removePlayer(playerToRemove: Player): void {
       this.players = this.players.filter((player) => player !== playerToRemove);
+      // TODO: Check logic with having to go to the next player
     }
 
-    // Roll the dice, return a face
-    rollDice() {
+    // Function to roll the dice
+    rollDice(): void {
       const randomIndex = Math.floor(Math.random() * this.dice.length);
       this.currentDiceFace = randomIndex;
+      // TODO: Handle mid-turn steps before going to the next player---this should be confirmed before handing to next
       this.nextPlayer();
-
-      console.log("ROLLED: ", this.currentDiceFace, " with ", this.currentPlayer.name);
+      console.log(`Player ${this.currentPlayer} rolled a ${this.currentDiceFace}`);
     }
 
+    // Function to replace a piece on the current face
     replacePieceOnCurrentFace(pieceIndex: number): void {
       const movementPiece = new MovementPiece(this.currentPlayer);
       this.dice[this.currentDiceFace][pieceIndex] = movementPiece;
@@ -45,25 +46,25 @@
     }
   }
 
+  // Initialize values
   let game: Race3000Game = $state({} as Race3000Game);
-
   let dice: Dice = $state([]);
-  
   // let selectedPlayers: string[] = [];
   let selectedPlayers: string[] = $state(["red", "green", "blue", "white"]);
-  
   // let gameStarted: boolean = false;
   let gameStarted: boolean = $state(true);
   configGame();
   
+  // Initial configuration of game
+  // TODO: Revert to player selection---skipping just for ease of testing
   function configGame() {
     // if (selectedPlayers.length > 0) {
     if (true) {
+
       // Generate players from checklist
       let players: Player[] = [];
       for (let playerColor of selectedPlayers) {
-        // Create new player with 7 pieces (default)
-        let player: Player = new Player(playerColor, 7);
+        let player: Player = new Player(playerColor, 7); // New player has 7 pieces by default
         players.push(player);
       }
 
@@ -71,22 +72,25 @@
       for (let i = 0; i < 6; i++) {
         let face: Face = [];
         
+        // Temporarily generates random pieces for testing
         for (let j = 0; j < 4; j++) {
-
           let piece: GamePiece;
           const randomIndex: number = Math.floor(Math.random() * (players.length + 1));
+
           if (randomIndex > 3) {
+            // Input empty piece (currently pink)
             piece = new EmptyPiece();
           } else {
+            // Input player movement piece
             const rolledPlayer = players[randomIndex]
             piece = new MovementPiece(rolledPlayer);
           }
           face.push(piece);
         }
-
         dice.push(face);
       }
 
+      // Create instance of game
       game = new Race3000Game(players, dice);
       gameLoop();
     }
@@ -112,6 +116,7 @@
       <FaceComponent game={game} bind:face={dice[game.currentDiceFace]} large={true}/>
     </div>
 
+    <!-- Temporary debug menu; includes roll button -->
     <div class="container flex flex-col m-auto items-center">
       <h2>Debug Menu</h2>
       <div>
@@ -147,25 +152,22 @@
   {:else}
     <h2>Select Players</h2>
 
+    <!-- List of possible players -->
     <form class="flex flex-col items-start mt-4">
-
-    {#each PLAYER_NAMES as player}
-      <label class="flex items-center">
-        <input type="checkbox" bind:group={selectedPlayers} value={player} />
-        <span class={`ml-2 ${PLAYER_COLORS[player].textColor} font-semibold`}>
-          {player.charAt(0).toUpperCase() + player.slice(1)}
-        </span>
-      </label>
-    {/each}
+      {#each PLAYER_NAMES as player}
+        <label class="flex items-center">
+          <input type="checkbox" bind:group={selectedPlayers} value={player} />
+          <span class={`ml-2 ${PLAYER_COLORS[player].textColor} font-semibold`}>
+            {player.charAt(0).toUpperCase() + player.slice(1)}
+          </span>
+        </label>
+      {/each}
     </form>
-
 
     <button 
       class="mt-10 p-4 bg-gray-200 rounded-lg hover:shadow-xl"
       onclick={configGame} 
       aria-label="Start a new game"
-    >
-    Start a new game!
-    </button>
+    >Start a new game!</button>
   {/if}
 </div>
