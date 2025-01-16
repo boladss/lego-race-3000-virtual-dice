@@ -8,7 +8,6 @@
 
   // Handle event when player wants to replace a piece on the dice
   function selectPieceHandler(piece: GamePiece, pieceIndex: number, ) {
-    console.log(`PIECE:${piece} ${pieceIndex}`);
     if (game.checkPlayerPieces(game.players[game.currentPlayer])) {
       game.setDicePiece(game.currentPlayer, diceIndex, pieceIndex);
     } else {

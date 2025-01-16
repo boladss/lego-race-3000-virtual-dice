@@ -52,14 +52,12 @@
       this.currentDiceFace = randomIndex;
       // TODO: Handle mid-turn steps before going to the next player---this should be confirmed before handing to next
       this.nextPlayer();
-      console.log(`Player ${this.currentPlayer} rolled a ${this.currentDiceFace}`);
     }
 
     // Function to replace a piece on the current face
     setDicePiece(playerIndex: number, diceIndex: number, pieceIndex: number): void {
       const movementPiece = new MovementPiece(this.players[playerIndex]);
       this.players[playerIndex].piecesLeft--; // Subtract one piece from the player
-      console.log(`PLAYER ${this.players[playerIndex].name} HAS ${this.players[playerIndex].piecesLeft} PIECES LEFT.`);
       this.dice[diceIndex][pieceIndex] = movementPiece; // Update the movement piece
       return;
     }
@@ -146,8 +144,6 @@
         {#each game.players as player }
           {player.name} {player.piecesLeft} <br/>
         {/each}
-        
-        
       </div>
 
       <button 
