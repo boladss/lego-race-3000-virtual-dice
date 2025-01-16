@@ -68,6 +68,7 @@
     private _dice: Dice = $state([]);
     private _currentPlayer: number = $state(0);
     private _currentDiceFace: number = $state(0);
+    private _currentPlayerPlacedPiece: boolean = false; // Tongue twister
 
     // Initialize game with list of players and the initial dice
     constructor(players: Player[], dice: Dice) {
@@ -81,10 +82,14 @@
     public get dice() { return this._dice; }
     public get currentPlayer() { return this._currentPlayer; }
     public get currentDiceFace() { return this._currentDiceFace; }
+    public get currentPlayerPlacedPiece() { return this._currentPlayerPlacedPiece; }
+
+    public set currentPlayerPlacedPiece(state: boolean) { this._currentPlayerPlacedPiece = state; }
 
     // Function to set next player's turn
     public nextPlayer(): void {
       this._currentPlayer = (this._currentPlayer + 1) % this._players.length;
+      this._currentPlayerPlacedPiece = false;
     }
 
     // Function to remove a player from the game (typically as they've already finished the lap)

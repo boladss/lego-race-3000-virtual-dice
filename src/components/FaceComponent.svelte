@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { PieceType, type GamePiece } from "$lib/types";
+  import { Piece, PieceType } from "$lib/types";
   
   let { game, face = $bindable(), diceIndex, large = false } = $props();
   
@@ -7,9 +7,10 @@
   let interactable = true;
 
   // Handle event when player wants to replace a piece on the dice
-  function selectPieceHandler(piece: GamePiece, pieceIndex: number, ) {
-    if (game.checkPlayerPieces(game.currentPlayer)) {
+  function selectPieceHandler( pieceIndex: number ) {
+    if (game.checkPlayerPieces(game.currentPlayer) && !game.currentPlayerPlacedPiece) {
       game.setDicePiece(game.currentPlayer, diceIndex, pieceIndex);
+      game.currentPlayerPlacedPiece = true;
     } else {
       alert("No more pieces!");
     }
@@ -24,7 +25,7 @@
     {#each face as piece, pieceIndex}
       {#if piece.type === PieceType.Empty}
         <button 
-          onclick={() => selectPieceHandler(piece, pieceIndex)}
+          onclick={() => selectPieceHandler(pieceIndex)}
           class="size-16 shadow-md {piece.getColor()} {interactable ? 'hover:shadow-[0_0_5px_5px_red] hover:z-10' : ''}" 
           aria-label="Piece"
         >
