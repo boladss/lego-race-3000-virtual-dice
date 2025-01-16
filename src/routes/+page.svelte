@@ -44,6 +44,12 @@
       this.dice[this.currentDiceFace][pieceIndex] = movementPiece;
       return;
     }
+
+    checkPlayerPieces(playerToCheck: Player): number {
+      const player = this.players.filter((player) => player === playerToCheck)[0];
+      if (player) return player.piecesLeft;
+      else return -1;
+    }
   }
 
   // Initialize values

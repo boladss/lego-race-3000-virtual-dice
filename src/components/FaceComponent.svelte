@@ -7,7 +7,11 @@
 
   function selectPieceHandler(piece: GamePiece, pieceIndex: number) {
     console.log(`PIECE:${piece} ${pieceIndex}`);
-    game.replacePieceOnCurrentFace(pieceIndex);
+    if (game.checkPlayerPieces(game.currentPlayer)) {
+      game.replacePieceOnCurrentFace(pieceIndex);
+    } else {
+      alert("No more pieces!");
+    }
   }
 </script>
 
