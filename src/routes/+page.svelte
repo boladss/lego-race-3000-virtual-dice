@@ -1,6 +1,6 @@
 <script lang="ts">
   import FaceComponent from "../components/FaceComponent.svelte";
-  import { PLAYER_NAMES, PLAYER_COLORS, Player, MovementPiece } from "$lib/types"
+  import { PLAYER_NAMES, PLAYER_COLORS, Player, MovementPiece, SpecialPiece } from "$lib/types"
   import { type Dice, type Face, type GamePiece, EmptyPiece } from "$lib/types";
 
   export class Race3000Game {
@@ -68,27 +68,23 @@
         players.push(player);
       }
 
-      // Generate dice faces
+      // Generate empty dice faces
       for (let i = 0; i < 6; i++) {
         let face: Face = [];
-        
-        // Temporarily generates random pieces for testing
         for (let j = 0; j < 4; j++) {
-          let piece: GamePiece;
-          const randomIndex: number = Math.floor(Math.random() * (players.length + 1));
-
-          if (randomIndex > 3) {
-            // Input empty piece (currently pink)
-            piece = new EmptyPiece();
-          } else {
-            // Input player movement piece
-            const rolledPlayer = players[randomIndex]
-            piece = new MovementPiece(rolledPlayer);
-          }
+          let piece = new EmptyPiece();
           face.push(piece);
         }
         dice.push(face);
       }
+
+      // Set turbo tiles (fixed)
+      // First face
+      dice[0][0] = new SpecialPiece("turbo");
+      dice[0][1] = new SpecialPiece("turbo");
+      // Last face
+      dice[5][2] = new SpecialPiece("turbo");
+      dice[5][3] = new SpecialPiece("turbo");
 
       // Create instance of game
       game = new Race3000Game(players, dice);

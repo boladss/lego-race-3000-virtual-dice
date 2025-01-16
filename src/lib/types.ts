@@ -46,7 +46,7 @@ export abstract class Piece {
 export class EmptyPiece extends Piece {
   constructor() {super(PieceType.Empty)}
 
-  getColor(): string { return "bg-pink-500"}
+  getColor(): string { return "bg-stone-800"}
 }
 
 export class MovementPiece extends Piece {
@@ -58,11 +58,15 @@ export class MovementPiece extends Piece {
 }
 
 export class SpecialPiece extends Piece {
-  constructor(public name: string, public color: string) {
+  constructor(public name: string) {
     super(PieceType.Special);
   }
 
-  getColor(): string { return this.color; }
+  getColor(): string { 
+    if (this.name === "turbo") return "bg-orange-500" ;
+    else return "bg-amber-300";
+
+  }
 }
 
 export type GamePiece = EmptyPiece | MovementPiece | SpecialPiece;
