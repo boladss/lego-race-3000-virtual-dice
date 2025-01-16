@@ -1,8 +1,8 @@
 <script lang="ts">
-  import DiceComponent from "../components/DiceComponent.svelte";
   import FaceComponent from "../components/FaceComponent.svelte";
   import { PLAYER_NAMES, PLAYER_COLORS, Player, MovementPiece } from "$lib/types"
   import { type Dice, type Face, type GamePiece, EmptyPiece } from "$lib/types";
+	import { getNameOfDeclaration } from "typescript";
 
   export class Race3000Game {
     public players: Player[];
@@ -47,7 +47,7 @@
 
   let game: Race3000Game = $state({} as Race3000Game);
 
-  let dice: Dice = [];
+  let dice: Dice = $state([]);
   
   // let selectedPlayers: string[] = [];
   let selectedPlayers: string[] = $state(["red", "green", "blue", "white"]);
@@ -93,9 +93,11 @@
   };
 
   function gameLoop() {
+    // Update UI
     gameStarted = true;
 
-    console.log(game.currentPlayer);
+    // Update display dice
+    dice = game.dice;
   }
 </script>
 
@@ -107,7 +109,7 @@
     
     <!-- Face display -->
     <div class="mb-10">
-      <FaceComponent game={game} index={game.currentDiceFace} large={true}/>
+      <FaceComponent game={game} bind:face={dice[game.currentDiceFace]} large={true}/>
     </div>
 
     <div class="container flex flex-col m-auto items-center">
@@ -124,7 +126,21 @@
       </button>
     </div>
     
-    <DiceComponent game={game} />
+    <!-- Display full dice -->
+    <div class="grid grid-cols-4 gap-1">
+      <div class="col-span-2"></div>
+      <FaceComponent game={game} bind:face={dice[0]} />
+      <div class="col-span-1"></div>
+      
+      <FaceComponent game={game} bind:face={dice[1]} />
+      <FaceComponent game={game} bind:face={dice[2]} />
+      <FaceComponent game={game} bind:face={dice[3]} />
+      <FaceComponent game={game} bind:face={dice[4]} />
+    
+      <div class="col-span-2"></div>
+      <FaceComponent game={game} bind:face={dice[5]} />
+      <div class="col-span-1"></div>
+    </div>
     
 
   <!-- Start a new game -->

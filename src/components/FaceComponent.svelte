@@ -1,15 +1,13 @@
 <script lang="ts">
   import { PieceType, type GamePiece } from "$lib/types";
   
-  let { game, index, large = false } = $props();
+  let { game, face = $bindable(), large = false } = $props();
   
   let interactable = true;
-  let displayPieces = $state(game.dice[index]);
 
   function selectPieceHandler(piece: GamePiece, pieceIndex: number) {
     console.log(`PIECE:${piece} ${pieceIndex}`);
     game.replacePieceOnCurrentFace(pieceIndex);
-    displayPieces = game.dice[index];
   }
 </script>
 
@@ -18,7 +16,7 @@
 <div class="size-fit p-4 rounded-2xl bg-gray-900">
   <div class="grid grid-cols-2 grid-rows-2 shadow-[0_0_10px_0px]">
     <!-- TODO: Fix logic for rendering pieces -->
-    {#each displayPieces as piece, index}
+    {#each face as piece, index}
       {#if piece.type === PieceType.Empty}
         <button 
           onclick={() => selectPieceHandler(piece, index)}
@@ -40,7 +38,7 @@
 {:else}
 <div class="size-fit p-2 rounded-xl bg-gray-900">
   <div class="grid grid-cols-2 grid-rows-2 shadow-[0_0_5px_0px]">
-    {#each displayPieces as piece}
+    {#each face as piece}
       <div class="size-8 shadow-sm {piece.getColor()}"></div>
     {/each}
   </div>
