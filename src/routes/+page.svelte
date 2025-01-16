@@ -1,13 +1,53 @@
 <script lang="ts">
   import DiceComponent from "../components/DiceComponent.svelte";
   import FaceComponent from "../components/FaceComponent.svelte";
-  import { PLAYER_NAMES, PLAYER_COLORS, Player, Race3000Game, MovementPiece } from "$lib/types"
+  import { PLAYER_NAMES, PLAYER_COLORS, Player, MovementPiece } from "$lib/types"
   import { type Dice, type Face, type GamePiece, EmptyPiece } from "$lib/types";
+
+  export class Race3000Game {
+    public players: Player[];
+    public dice: Dice = $state([]);
+    public currentPlayer: Player = $state({} as Player);
+    public currentDiceFace: number = $state(0);
+
+    constructor(players: Player[], dice: Dice) {
+      this.players = players;
+      this.dice = dice;
+      this.currentPlayer = players[0];
+    }
+
+    // Set next player's turn
+    nextPlayer(): void {
+      const currentIndex = this.players.indexOf(this.currentPlayer);
+      const nextIndex = (currentIndex + 1) % this.players.length;
+
+      this.currentPlayer = this.players[nextIndex];
+    }
+
+    // Remove a player from the game (typically as they've already finished the lap)
+    removePlayer(playerToRemove: Player): void {
+      this.players = this.players.filter((player) => player !== playerToRemove);
+    }
+
+    // Roll the dice, return a face
+    rollDice() {
+      const randomIndex = Math.floor(Math.random() * this.dice.length);
+      this.currentDiceFace = randomIndex;
+      this.nextPlayer();
+
+      console.log("ROLLED: ", this.currentDiceFace, " with ", this.currentPlayer.name);
+    }
+
+    replacePieceOnCurrentFace(pieceIndex: number): void {
+      const movementPiece = new MovementPiece(this.currentPlayer);
+      this.dice[this.currentDiceFace][pieceIndex] = movementPiece;
+      return;
+    }
+  }
 
   let game: Race3000Game = $state({} as Race3000Game);
 
   let dice: Dice = [];
-  let currentDiceFace: number = $state(0);
   
   // let selectedPlayers: string[] = [];
   let selectedPlayers: string[] = $state(["red", "green", "blue", "white"]);
@@ -57,13 +97,6 @@
 
     console.log(game.currentPlayer);
   }
-
-  function handleDiceRoll() {
-    game.rollDice();
-    currentDiceFace = game.currentDiceFace;
-    game.nextPlayer();
-    console.log("CURRENT PLAYER: ", game.currentPlayer);
-  }
 </script>
 
 
@@ -74,18 +107,17 @@
     
     <!-- Face display -->
     <div class="mb-10">
-      <FaceComponent game={game} index={currentDiceFace} large={true}/>
+      <FaceComponent game={game} index={game.currentDiceFace} large={true}/>
     </div>
 
     <div class="container flex flex-col m-auto items-center">
       <h2>Debug Menu</h2>
       <div>
-        Current Player: {game.currentPlayer.name}
-
+        Current Player: {game.currentPlayer.name} {game.currentDiceFace}
       </div>
 
       <button 
-        onclick={() => handleDiceRoll()}
+        onclick={() => game.rollDice()}
         class="mb-10 p-4 bg-gray-200 rounded-lg hover:shadow-xl"
         >
         Roll
