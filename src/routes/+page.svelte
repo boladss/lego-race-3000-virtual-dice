@@ -1,73 +1,122 @@
 <script lang="ts">
   import FaceComponent from "../components/FaceComponent.svelte";
-  import { PLAYER_NAMES, PLAYER_COLORS, MovementPiece, SpecialPiece } from "$lib/types"
-  import { type Dice, type Face, type GamePiece, EmptyPiece } from "$lib/types";
+  import { PLAYER_NAMES, PLAYER_COLORS, type Dice, type Face, Piece, PieceType } from "$lib/types"
 
-  export class Player {
-    public name: string;
-    public piecesLeft: number = $state(0);
+  /* 
+  There are two main types of dice pieces: 
+  (1) Movement pieces --- corresponds to a player
+  (2) Special pieces --- does NOT correspond to a player (turbo, shortcut pieces)
+  */
+  export class EmptyPiece extends Piece {
+    constructor() {super(PieceType.Empty)}
 
-    constructor(name: string, piecesLeft: number) {
+    getColor(): string { return "bg-stone-800"}
+  }
+
+  export class MovementPiece extends Piece {
+    public player: Player = {} as Player;
+    constructor(player: Player) {
+      super(PieceType.Movement);
+      this.player = player;
+    }
+
+    getColor(): string { return this.player.getBgColor(); }
+  }
+
+  export class SpecialPiece extends Piece {
+    public name: string = "";
+    constructor(name: string) {
+      super(PieceType.Special);
       this.name = name;
-      this.piecesLeft = piecesLeft;
     }
 
-    getTextColor(): string {
-      return PLAYER_COLORS[this.name].textColor;
-    }
-
-    getBgColor(): string {
-      return PLAYER_COLORS[this.name].bgColor;
+    getColor(): string { 
+      if (this.name === "turbo") return "bg-orange-500" ;
+      else return "bg-amber-300";
     }
   }
 
+  /*
+  Main class handling per-player logic
+  */
 
+  export class Player {
+    public name: string;
+    private _piecesLeft: number = $state(0);
+
+    constructor(name: string, piecesLeft: number) {
+      this.name = name;
+      this._piecesLeft = piecesLeft;
+    }
+
+    public get piecesLeft() { return this._piecesLeft; }
+
+    public set piecesLeft(pieces: number) {
+      if (pieces < 0) throw new Error('Pieces less than 0');
+      this._piecesLeft = pieces;
+    }
+
+    public getTextColor(): string { return PLAYER_COLORS[this.name].textColor; }
+    public getBgColor(): string { return PLAYER_COLORS[this.name].bgColor; }
+  }
+
+  /*
+  Main class handling game logic
+  */
   export class Race3000Game {
-    public players: Player[];
-    public dice: Dice = $state([]);
-    public currentPlayer: number = $state(0);
-    public currentDiceFace: number = $state(0);
+    private _players: Player[];
+    private _dice: Dice = $state([]);
+    private _currentPlayer: number = $state(0);
+    private _currentDiceFace: number = $state(0);
 
     // Initialize game with list of players and the initial dice
     constructor(players: Player[], dice: Dice) {
-      this.players = players;
-      this.dice = dice;
-      this.currentPlayer = 0;
+      this._players = players;
+      this._dice = dice;
+      this._currentPlayer = 0;
     }
 
+    // Getters
+    public get players() { return this._players; }
+    public get dice() { return this._dice; }
+    public get currentPlayer() { return this._currentPlayer; }
+    public get currentDiceFace() { return this._currentDiceFace; }
+
     // Function to set next player's turn
-    nextPlayer(): void {
-      this.currentPlayer = (this.currentPlayer + 1) % this.players.length;
+    public nextPlayer(): void {
+      this._currentPlayer = (this._currentPlayer + 1) % this._players.length;
     }
 
     // Function to remove a player from the game (typically as they've already finished the lap)
-    removePlayer(playerToRemove: Player): void {
-      this.players = this.players.filter((player) => player !== playerToRemove);
+    private removePlayer(playerToRemove: Player): void {
+      this._players = this._players.filter((player) => player !== playerToRemove);
       // TODO: Check logic with having to go to the next player
     }
 
     // Function to roll the dice
-    rollDice(): void {
-      const randomIndex = Math.floor(Math.random() * this.dice.length);
-      this.currentDiceFace = randomIndex;
+    public rollDice(): void {
+      const randomIndex = Math.floor(Math.random() * this._dice.length);
+      this._currentDiceFace = randomIndex;
       // TODO: Handle mid-turn steps before going to the next player---this should be confirmed before handing to next
       this.nextPlayer();
     }
 
     // Function to replace a piece on the current face
-    setDicePiece(playerIndex: number, diceIndex: number, pieceIndex: number): void {
-      const movementPiece = new MovementPiece(this.players[playerIndex]);
-      this.players[playerIndex].piecesLeft--; // Subtract one piece from the player
-      this.dice[diceIndex][pieceIndex] = movementPiece; // Update the movement piece
+    public setDicePiece(playerIndex: number, diceIndex: number, pieceIndex: number): void {
+      const movementPiece = new MovementPiece(this._players[playerIndex]);
+      this._players[playerIndex].piecesLeft--; // Subtract one piece from the player
+      this._dice[diceIndex][pieceIndex] = movementPiece; // Update the movement piece
       return;
     }
 
-    checkPlayerPieces(playerToCheck: Player): number {
-      const player = this.players.filter((player) => player === playerToCheck)[0];
-      if (player) return player.piecesLeft;
-      else return -1;
+    public checkPlayerPieces(playerIndex: number): number {
+      return this.players[playerIndex].piecesLeft;
     }
   }
+
+  /*
+  Game initialization!
+  */
 
   // Initialize values
   let game: Race3000Game = $state({} as Race3000Game);
@@ -78,7 +127,7 @@
   let gameStarted: boolean = $state(true);
   configGame();
   
-  // Initial configuration of game
+  // Game configuration
   // TODO: Revert to player selection---skipping just for ease of testing
   function configGame() {
     // if (selectedPlayers.length > 0) {
@@ -115,6 +164,7 @@
     }
   };
 
+  // TODO: Might not be necessary
   function gameLoop() {
     // Update UI
     gameStarted = true;

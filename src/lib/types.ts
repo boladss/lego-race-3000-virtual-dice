@@ -18,40 +18,7 @@ export enum PieceType {
   Special = "Special",
 }
 
-/* 
-There are two main types of dice pieces: 
-(1) Movement pieces --- corresponds to a player
-(2) Special pieces --- does NOT correspond to a player (turbo, shortcut pieces)
-*/
 export abstract class Piece {
   constructor(public type: PieceType) {}
   abstract getColor(): string;
 }
-
-export class EmptyPiece extends Piece {
-  constructor() {super(PieceType.Empty)}
-
-  getColor(): string { return "bg-stone-800"}
-}
-
-export class MovementPiece extends Piece {
-  constructor(public player: Player) {
-    super(PieceType.Movement);
-  }
-
-  getColor(): string { return this.player.getBgColor(); }
-}
-
-export class SpecialPiece extends Piece {
-  constructor(public name: string) {
-    super(PieceType.Special);
-  }
-
-  getColor(): string { 
-    if (this.name === "turbo") return "bg-orange-500" ;
-    else return "bg-amber-300";
-
-  }
-}
-
-export type GamePiece = EmptyPiece | MovementPiece | SpecialPiece;
