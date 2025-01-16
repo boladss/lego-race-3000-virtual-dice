@@ -1,26 +1,43 @@
 <script lang="ts">
   import FaceComponent from "../components/FaceComponent.svelte";
-  import { PLAYER_NAMES, PLAYER_COLORS, Player, MovementPiece, SpecialPiece } from "$lib/types"
+  import { PLAYER_NAMES, PLAYER_COLORS, MovementPiece, SpecialPiece } from "$lib/types"
   import { type Dice, type Face, type GamePiece, EmptyPiece } from "$lib/types";
+
+  export class Player {
+    public name: string;
+    public piecesLeft: number = $state(0);
+
+    constructor(name: string, piecesLeft: number) {
+      this.name = name;
+      this.piecesLeft = piecesLeft;
+    }
+
+    getTextColor(): string {
+      return PLAYER_COLORS[this.name].textColor;
+    }
+
+    getBgColor(): string {
+      return PLAYER_COLORS[this.name].bgColor;
+    }
+  }
+
 
   export class Race3000Game {
     public players: Player[];
     public dice: Dice = $state([]);
-    public currentPlayer: Player = $state({} as Player);
+    public currentPlayer: number = $state(0);
     public currentDiceFace: number = $state(0);
 
     // Initialize game with list of players and the initial dice
     constructor(players: Player[], dice: Dice) {
       this.players = players;
       this.dice = dice;
-      this.currentPlayer = players[0];
+      this.currentPlayer = 0;
     }
 
     // Function to set next player's turn
     nextPlayer(): void {
-      const currentIndex = this.players.indexOf(this.currentPlayer);
-      const nextIndex = (currentIndex + 1) % this.players.length;
-      this.currentPlayer = this.players[nextIndex];
+      this.currentPlayer = (this.currentPlayer + 1) % this.players.length;
     }
 
     // Function to remove a player from the game (typically as they've already finished the lap)
@@ -39,9 +56,11 @@
     }
 
     // Function to replace a piece on the current face
-    replacePieceOnCurrentFace(pieceIndex: number): void {
-      const movementPiece = new MovementPiece(this.currentPlayer);
-      this.dice[this.currentDiceFace][pieceIndex] = movementPiece;
+    setDicePiece(playerIndex: number, diceIndex: number, pieceIndex: number): void {
+      const movementPiece = new MovementPiece(this.players[playerIndex]);
+      this.players[playerIndex].piecesLeft--; // Subtract one piece from the player
+      console.log(`PLAYER ${this.players[playerIndex].name} HAS ${this.players[playerIndex].piecesLeft} PIECES LEFT.`);
+      this.dice[diceIndex][pieceIndex] = movementPiece; // Update the movement piece
       return;
     }
 
@@ -115,14 +134,20 @@
     
     <!-- Face display -->
     <div class="mb-10">
-      <FaceComponent game={game} bind:face={dice[game.currentDiceFace]} large={true}/>
+      <FaceComponent game={game} bind:face={dice[game.currentDiceFace]} diceIndex={game.currentDiceFace} large={true}/>
     </div>
 
     <!-- Temporary debug menu; includes roll button -->
     <div class="container flex flex-col m-auto items-center">
       <h2>Debug Menu</h2>
       <div>
-        Current Player: {game.currentPlayer.name} {game.currentDiceFace}
+        Current Player: {game.players[game.currentPlayer].name}  rolled {game.currentDiceFace} <br/>
+        Pieces left: <br/>
+        {#each game.players as player }
+          {player.name} {player.piecesLeft} <br/>
+        {/each}
+        
+        
       </div>
 
       <button 
@@ -136,16 +161,16 @@
     <!-- Display full dice -->
     <div class="grid grid-cols-4 gap-1">
       <div class="col-span-2"></div>
-      <FaceComponent game={game} bind:face={dice[0]} />
+      <FaceComponent game={game} bind:face={dice[0]} diceIndex={0} />
       <div class="col-span-1"></div>
       
-      <FaceComponent game={game} bind:face={dice[1]} />
-      <FaceComponent game={game} bind:face={dice[2]} />
-      <FaceComponent game={game} bind:face={dice[3]} />
-      <FaceComponent game={game} bind:face={dice[4]} />
+      <FaceComponent game={game} bind:face={dice[1]} diceIndex={1} />
+      <FaceComponent game={game} bind:face={dice[2]} diceIndex={2} />
+      <FaceComponent game={game} bind:face={dice[3]} diceIndex={3} />
+      <FaceComponent game={game} bind:face={dice[4]} diceIndex={4} />
     
       <div class="col-span-2"></div>
-      <FaceComponent game={game} bind:face={dice[5]} />
+      <FaceComponent game={game} bind:face={dice[5]} diceIndex={5} />
       <div class="col-span-1"></div>
     </div>
     

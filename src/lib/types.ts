@@ -9,21 +9,6 @@ export const PLAYER_COLORS: { [key: string]: { textColor: string, bgColor: strin
   "white": { textColor: "text-stone-700", bgColor: "bg-stone-100"},
 };
 
-export class Player {
-  constructor(
-    public name: string,
-    public piecesLeft: number,
-  ) {}
-
-  getTextColor(): string {
-    return PLAYER_COLORS[this.name].textColor;
-  }
-
-  getBgColor(): string {
-    return PLAYER_COLORS[this.name].bgColor;
-  }
-}
-
 export type Dice = Face[];
 export type Face = Piece[];
 
