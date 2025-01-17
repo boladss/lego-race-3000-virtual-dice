@@ -1,6 +1,7 @@
 <script lang="ts">
   import FaceComponent from "../components/FaceComponent.svelte";
-  import { PLAYER_NAMES, PLAYER_COLORS, type Dice, type Face, Piece, PieceType } from "$lib/types"
+  import { type Dice, type Face, Piece, PieceType } from "$lib/types"
+  import { PLAYER_NAMES, PLAYER_COLORS } from "$lib/players";
 
   const TOTAL_MOVEMENT_PIECES = 7;
 
