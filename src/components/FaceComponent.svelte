@@ -14,18 +14,18 @@
 
   // Handle event when player wants to replace a piece on the dice
   function selectPieceHandler( pieceIndex: number ) {
-    if (game.gameState === "init") {
-      if (!game.currentSubPlayerPlacedPiece) {
-        game.setDicePiece(game.currentPlayerSubturn, diceIndex, pieceIndex);
-      } else {
-        alert("Already placed a piece!");
+    switch (game.gameState) {
+      case "init": {
+        if (!game.currentSubPlayerPlacedPiece) {
+          game.setDicePiece(game.currentPlayerSubturn, diceIndex, pieceIndex);
+        } else alert("Already placed a piece!");
+        return;
       }
-    } else {
-      console.log("NORMAL:", game.gameState);
-      if (game.checkPlayerPieces(game.currentPlayerTurn) && !game.currentPlayerPlacedPiece) {
-        game.setDicePiece(game.currentPlayerTurn, diceIndex, pieceIndex);
-      } else {
-        alert("No more pieces!");
+      case "main": {
+        if (game.checkPlayerPieces(game.currentPlayerTurn) && !game.currentPlayerPlacedPiece) {
+          game.setDicePiece(game.currentPlayerTurn, diceIndex, pieceIndex);
+        } else alert("No more pieces!");
+        return;
       }
     }
   }
