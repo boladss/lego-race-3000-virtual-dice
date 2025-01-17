@@ -67,7 +67,10 @@
     private _players: Player[];
     private _dice: Dice = $state([]);
     private _currentPlayerTurn: number = $state(0);
+    private _currentPlayerSubturn: number = $state(0);
     private _currentDiceFace: number = $state(0);
+
+    private _currentPlayerRolled: boolean = $state(false);
     private _currentPlayerPlacedPiece: boolean = false; // Tongue twister
 
     // Initialize game with list of players and the initial dice
@@ -75,21 +78,37 @@
       this._players = players;
       this._dice = dice;
       this._currentPlayerTurn = 0;
+      this._currentPlayerSubturn = 0;
     }
 
     // Getters
     public get players() { return this._players; }
     public get dice() { return this._dice; }
     public get currentPlayerTurn() { return this._currentPlayerTurn; }
+    public get currentPlayerSubturn() { return this._currentPlayerSubturn; }
+
     public get currentDiceFace() { return this._currentDiceFace; }
+    public get currentPlayerRolled() { return this._currentPlayerRolled; }
     public get currentPlayerPlacedPiece() { return this._currentPlayerPlacedPiece; }
 
     public set currentPlayerPlacedPiece(state: boolean) { this._currentPlayerPlacedPiece = state; }
 
     // Function to set next player's turn
-    public nextPlayer(): void {
+    public nextTurn(): void {
       this._currentPlayerTurn = (this._currentPlayerTurn + 1) % this._players.length;
+      this._currentPlayerSubturn = this._currentPlayerTurn;
+      
+      this._currentPlayerRolled = false;
       this._currentPlayerPlacedPiece = false;
+    }
+
+    public nextSubturn(): void {
+      const nextPlayerIndex = (this.currentPlayerSubturn + 1) % this._players.length;
+      
+      // Check if subturns have finished (already back at player who rolled the dice)
+      if (nextPlayerIndex !== this._currentPlayerTurn) this._currentPlayerSubturn = nextPlayerIndex;
+      else game.nextTurn();
+      
     }
 
     // Function to remove a player from the game (typically as they've already finished the lap)
@@ -102,8 +121,9 @@
     public rollDice(): void {
       const randomIndex = Math.floor(Math.random() * this._dice.length);
       this._currentDiceFace = randomIndex;
+      this._currentPlayerRolled = true;
+      console.log("ROLLED: ", this._currentPlayerRolled);
       // TODO: Handle mid-turn steps before going to the next player---this should be confirmed before handing to next
-      this.nextPlayer();
     }
 
     // Function to replace a piece on the current face
@@ -194,19 +214,33 @@
     <div class="container flex flex-col m-auto items-center">
       <h2>Debug Menu</h2>
       <div>
-        Current Player: {game.players[game.currentPlayerTurn].name}  rolled {game.currentDiceFace} <br/>
+        Player {game.players[game.currentPlayerTurn].name}  rolled {game.currentDiceFace} <br/>
+        Player {game.players[game.currentPlayerSubturn].name} currently moving <br />
         Pieces left: <br/>
         {#each game.players as player }
           {player.name} {player.piecesLeft} <br/>
         {/each}
       </div>
 
-      <button 
-        onclick={() => game.rollDice()}
-        class="mb-10 p-4 bg-gray-200 rounded-lg hover:shadow-xl"
-        >
-        Roll
-      </button>
+      <!--  Button to roll dice! -->
+      {#if ((game.currentPlayerTurn === game.currentPlayerSubturn) && (game.currentPlayerRolled === false))}
+        <button 
+          onclick={() => game.rollDice()}
+          class="mb-10 p-4 bg-gray-200 rounded-lg hover:shadow-xl"
+          >
+          Roll ({game.players[game.currentPlayerTurn].name})
+        </button>
+      {/if}
+
+      <!-- Button to confirm subturns -->
+      {#if (game.currentPlayerRolled === true) }
+        <button 
+          onclick={() => game.nextSubturn()}
+          class="mb-2 p-4 bg-gray-200 rounded-lg hover:shadow-xl"
+          >
+          Confirm ({game.players[game.currentPlayerSubturn].name})
+        </button>
+      {/if}
     </div>
     
     <!-- Display full dice -->
