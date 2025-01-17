@@ -73,15 +73,14 @@
     private _currentPlayerSubturn: number = $state(0);
     private _currentDiceFace: number = $state(0);
 
+    // Flags upon flags upon flags
     private _currentPlayerRolled: boolean = $state(false);
-    private _currentPlayerPlacedPiece: boolean = false; // Tongue twister
+    private _currentPlayerPlacedPiece: boolean = $state(false); // Tongue twister
 
     // Initialize game with list of players and the initial dice
     constructor(players: Player[], dice: Dice) {
       this._players = players;
       this._dice = dice;
-      this._currentPlayerTurn = 0;
-      this._currentPlayerSubturn = 0;
     }
 
     // Getters
@@ -89,7 +88,6 @@
     public get dice() { return this._dice; }
     public get currentPlayerTurn() { return this._currentPlayerTurn; }
     public get currentPlayerSubturn() { return this._currentPlayerSubturn; }
-
     public get currentDiceFace() { return this._currentDiceFace; }
     public get currentPlayerRolled() { return this._currentPlayerRolled; }
     public get currentPlayerPlacedPiece() { return this._currentPlayerPlacedPiece; }
@@ -112,23 +110,13 @@
       (b) the player who rolled has NOT YET placed a movement piece on this face; AND
       (c) the player who rolled still has pieces remaining
       */
-     
-     console.log("POST-ROLL CHECKS:", 
-      this._dice[this._currentDiceFace].some(piece => piece instanceof EmptyPiece), 
-      this._players[this._currentPlayerTurn].piecesLeft, 
-      !this.currentPlayerPlacedPiece
-      )
-      
-      const emptyPiece = new EmptyPiece();
       if (
         this._dice[this._currentDiceFace].some(piece => piece instanceof EmptyPiece) 
         && this._players[this._currentPlayerTurn].piecesLeft > 0
         && !this.currentPlayerPlacedPiece) 
       {
         alert("Place a movement piece first!")
-      }
-
-      else {
+      } else {
         const nextPlayerIndex = (this.currentPlayerSubturn + 1) % this._players.length;
   
         // Check if subturns have finished (already back at player who rolled the dice)
@@ -148,7 +136,6 @@
       const randomIndex = Math.floor(Math.random() * this._dice.length);
       this._currentDiceFace = randomIndex;
       this._currentPlayerRolled = true;
-      // TODO: Handle mid-turn steps before going to the next player---this should be confirmed before handing to next
     }
 
     // Function to replace a piece on the current face
@@ -156,6 +143,7 @@
       const movementPiece = new MovementPiece(this._players[playerIndex]);
       this._players[playerIndex].piecesLeft--; // Subtract one piece from the player
       this._dice[diceIndex][pieceIndex] = movementPiece; // Update the movement piece
+      this._currentPlayerPlacedPiece = true;
       return;
     }
 
