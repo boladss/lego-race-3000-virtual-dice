@@ -8,8 +8,8 @@
 
   // Handle event when player wants to replace a piece on the dice
   function selectPieceHandler( pieceIndex: number ) {
-    if (game.checkPlayerPieces(game.currentPlayer) && !game.currentPlayerPlacedPiece) {
-      game.setDicePiece(game.currentPlayer, diceIndex, pieceIndex);
+    if (game.checkPlayerPieces(game.currentPlayerTurn) && !game.currentPlayerPlacedPiece) {
+      game.setDicePiece(game.currentPlayerTurn, diceIndex, pieceIndex);
       game.currentPlayerPlacedPiece = true;
     } else {
       alert("No more pieces!");

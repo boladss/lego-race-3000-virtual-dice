@@ -66,7 +66,7 @@
   export class Race3000Game {
     private _players: Player[];
     private _dice: Dice = $state([]);
-    private _currentPlayer: number = $state(0);
+    private _currentPlayerTurn: number = $state(0);
     private _currentDiceFace: number = $state(0);
     private _currentPlayerPlacedPiece: boolean = false; // Tongue twister
 
@@ -74,13 +74,13 @@
     constructor(players: Player[], dice: Dice) {
       this._players = players;
       this._dice = dice;
-      this._currentPlayer = 0;
+      this._currentPlayerTurn = 0;
     }
 
     // Getters
     public get players() { return this._players; }
     public get dice() { return this._dice; }
-    public get currentPlayer() { return this._currentPlayer; }
+    public get currentPlayerTurn() { return this._currentPlayerTurn; }
     public get currentDiceFace() { return this._currentDiceFace; }
     public get currentPlayerPlacedPiece() { return this._currentPlayerPlacedPiece; }
 
@@ -88,7 +88,7 @@
 
     // Function to set next player's turn
     public nextPlayer(): void {
-      this._currentPlayer = (this._currentPlayer + 1) % this._players.length;
+      this._currentPlayerTurn = (this._currentPlayerTurn + 1) % this._players.length;
       this._currentPlayerPlacedPiece = false;
     }
 
@@ -194,7 +194,7 @@
     <div class="container flex flex-col m-auto items-center">
       <h2>Debug Menu</h2>
       <div>
-        Current Player: {game.players[game.currentPlayer].name}  rolled {game.currentDiceFace} <br/>
+        Current Player: {game.players[game.currentPlayerTurn].name}  rolled {game.currentDiceFace} <br/>
         Pieces left: <br/>
         {#each game.players as player }
           {player.name} {player.piecesLeft} <br/>
