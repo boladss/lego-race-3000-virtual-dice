@@ -1,6 +1,6 @@
 <script lang="ts">
   import FaceComponent from "../components/FaceComponent.svelte";
-  import { type Dice, type Face, Piece, PieceType } from "$lib/types"
+  import { type Dice, type Face, Piece, PieceType, type GameState } from "$lib/types"
   import { PLAYER_NAMES, PLAYER_COLORS } from "$lib/players";
 
   const TOTAL_MOVEMENT_PIECES = 7;
@@ -73,9 +73,12 @@
     private _currentPlayerSubturn: number = $state(0);
     private _currentDiceFace: number = $state(0);
 
+    private _gameState: GameState = $state("init");
+
     // Flags upon flags upon flags
-    private _currentPlayerRolled: boolean = $state(false);
+    private _currentPlayerRolled: boolean = $state(true); // Defaults to true due to initialization
     private _currentPlayerPlacedPiece: boolean = $state(false); // Tongue twister
+    private _currentSubPlayerPlacedPiece: boolean = $state(false); // These are such awful names
 
     // Initialize game with list of players and the initial dice
     constructor(players: Player[], dice: Dice) {
@@ -91,8 +94,8 @@
     public get currentDiceFace() { return this._currentDiceFace; }
     public get currentPlayerRolled() { return this._currentPlayerRolled; }
     public get currentPlayerPlacedPiece() { return this._currentPlayerPlacedPiece; }
-
-    public set currentPlayerPlacedPiece(state: boolean) { this._currentPlayerPlacedPiece = state; }
+    public get currentSubPlayerPlacedPiece() { return this._currentSubPlayerPlacedPiece; }
+    public get gameState() { return this._gameState; }
 
     // Function to set next player's turn
     public nextTurn(): void {
@@ -104,25 +107,52 @@
     }
 
     public nextSubturn(): void {
-      /* 
-      Given: 
-      (a) an empty space on the current dice face
-      (b) the player who rolled has NOT YET placed a movement piece on this face; AND
-      (c) the player who rolled still has pieces remaining
-      */
-      if (
-        this._dice[this._currentDiceFace].some(piece => piece instanceof EmptyPiece) 
-        && this._players[this._currentPlayerTurn].piecesLeft > 0
-        && !this.currentPlayerPlacedPiece) 
-      {
-        alert("Place a movement piece first!")
-      } else {
-        const nextPlayerIndex = (this.currentPlayerSubturn + 1) % this._players.length;
-  
-        // Check if subturns have finished (already back at player who rolled the dice)
-        if (nextPlayerIndex !== this._currentPlayerTurn) this._currentPlayerSubturn = nextPlayerIndex;
-        else game.nextTurn();
+      // Main gameplay loop
+      if (this._gameState === "main") {
+        /* 
+        Given: 
+        (a) an empty space on the current dice face
+        (b) the player who rolled has NOT YET placed a movement piece on this face; AND
+        (c) the player who rolled still has pieces remaining
+        */
+        if (
+          this._dice[this._currentDiceFace].some(piece => piece instanceof EmptyPiece) 
+          && this._players[this._currentPlayerTurn].piecesLeft > 0
+          && !this._currentPlayerPlacedPiece) 
+        {
+          alert("Place a movement piece first!");
+        } else {
+          const nextPlayerIndex = (this.currentPlayerSubturn + 1) % this._players.length;
+    
+          // Check if subturns have finished (already back at player who rolled the dice)
+          if (nextPlayerIndex !== this._currentPlayerTurn) this._currentPlayerSubturn = nextPlayerIndex;
+          else game.nextTurn();
+        }
       }
+
+      // Initialization state --- place movement tiles alongside turbo tiles
+      else if (this._gameState === "init") {
+        if ( !this._currentSubPlayerPlacedPiece ) {
+          alert("Place a movement piece first!");
+        } else {
+          this._currentSubPlayerPlacedPiece = false;
+          const nextPlayerIndex = (this.currentPlayerSubturn + 1) % this._players.length;
+
+          // Check if subturns have finished (already back at player who rolled the dice)
+          if (nextPlayerIndex !== this._currentPlayerTurn) this._currentPlayerSubturn = nextPlayerIndex;
+          else {
+            // Finish initialization, transfer to main game state
+            this._gameState = "main";
+            
+            // Can't use nextTurn() as that would give the first turn to player 2; need to assign
+            this._currentPlayerSubturn = this._currentPlayerTurn;
+            this._currentPlayerRolled = false;
+            this._currentPlayerPlacedPiece = false;
+          };
+        }
+      }
+      
+
     }
 
     // Function to remove a player from the game (typically as they've already finished the lap)
@@ -143,7 +173,8 @@
       const movementPiece = new MovementPiece(this._players[playerIndex]);
       this._players[playerIndex].piecesLeft--; // Subtract one piece from the player
       this._dice[diceIndex][pieceIndex] = movementPiece; // Update the movement piece
-      this._currentPlayerPlacedPiece = true;
+      if (this._gameState === "init") this._currentSubPlayerPlacedPiece = true;
+      else this._currentPlayerPlacedPiece = true;
       return;
     }
 
@@ -218,11 +249,20 @@
   <h1 class="m-10">LEGO® Race 3000 Virtual Dice</h1>
   {#if gameStarted}
     
-    <!-- Face display -->
-    <div class="mb-10">
-      <FaceComponent game={game} bind:face={dice[game.currentDiceFace]} diceIndex={game.currentDiceFace} large={true}/>
-    </div>
-
+    <!-- Main face display -->
+    {#if game.gameState === "init"} 
+      <!-- Initialization --- shows both faces with turbo tiles -->
+      <div class="mb-10 space-x-10 flex flex-row ">
+        <FaceComponent game={game} bind:face={dice[0]} diceIndex={0} large={true}/>
+        <FaceComponent game={game} bind:face={dice[5]} diceIndex={5} large={true}/>
+      </div>
+    {:else}
+      <!-- Main game loop --- shows rolled dice face -->
+      <div class="mb-10">
+        <FaceComponent game={game} bind:face={dice[game.currentDiceFace]} diceIndex={game.currentDiceFace} large={true}/>
+      </div>
+    {/if}
+    
     <!-- Temporary debug menu; includes roll button -->
     <div class="container flex flex-col m-auto items-center">
       <h2>Debug Menu</h2>
@@ -236,7 +276,9 @@
       </div>
 
       <!--  Button to roll dice! -->
-      {#if ((game.currentPlayerTurn === game.currentPlayerSubturn) && (game.currentPlayerRolled === false))}
+      {#if ((game.currentPlayerTurn === game.currentPlayerSubturn) 
+      && (game.currentPlayerRolled === false)
+      && (game.gameState === "main"))}
         <button 
           onclick={() => game.rollDice()}
           class="mb-10 p-4 bg-gray-200 rounded-lg hover:shadow-xl"
@@ -246,7 +288,7 @@
       {/if}
 
       <!-- Button to confirm subturns, in between rolling of dice -->
-      {#if (game.currentPlayerRolled === true) }
+      {#if (game.currentPlayerRolled === true) || (game.gameState === "init")}
         <button 
           onclick={() => game.nextSubturn()}
           class="mb-10 p-4 bg-gray-200 rounded-lg hover:shadow-xl"

@@ -3,14 +3,24 @@
   
   let { game, face = $bindable(), diceIndex, large = false } = $props();
   
-  let interactable = true;
+  let placedPieceCheck: boolean = $state(game.currentPlayerPlacedPiece);
+  if (game.gameState === "init") placedPieceCheck = game._currentSubPlayerPlacedPiece;
 
   // Handle event when player wants to replace a piece on the dice
   function selectPieceHandler( pieceIndex: number ) {
-    if (game.checkPlayerPieces(game.currentPlayerTurn) && !game.currentPlayerPlacedPiece) {
-      game.setDicePiece(game.currentPlayerTurn, diceIndex, pieceIndex);
+    if (game.gameState === "init") {
+      if (!game.currentSubPlayerPlacedPiece) {
+        game.setDicePiece(game.currentPlayerSubturn, diceIndex, pieceIndex);
+      } else {
+        alert("Already placed a piece!");
+      }
     } else {
-      alert("No more pieces!");
+      console.log("NORMAL:", game.gameState);
+      if (game.checkPlayerPieces(game.currentPlayerTurn) && !game.currentPlayerPlacedPiece) {
+        game.setDicePiece(game.currentPlayerTurn, diceIndex, pieceIndex);
+      } else {
+        alert("No more pieces!");
+      }
     }
   }
 </script>
@@ -23,7 +33,7 @@
     {#each face as piece, pieceIndex}
 
       <!-- Rolling player can add their movement piece onto any empty piece on the rolled face -->
-      {#if ((piece.type === PieceType.Empty) && game.currentPlayerRolled && !game.currentPlayerPlacedPiece)}
+      {#if ((piece.type === PieceType.Empty) && game.currentPlayerRolled && !placedPieceCheck)}
         <button 
           onclick={() => selectPieceHandler(pieceIndex)}
           class="size-16 shadow-md {piece.getColor()} hover:shadow-[0_0_5px_5px_red] hover:z-10" 

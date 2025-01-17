@@ -11,3 +11,5 @@ export abstract class Piece {
   constructor(public type: PieceType) {}
   abstract getColor(): string;
 }
+
+export type GameState = "init" | "main" | "finish";
