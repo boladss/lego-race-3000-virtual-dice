@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { Piece, PieceType } from "$lib/types";
+  import { PieceType } from "$lib/types";
   
   let { game, face = $bindable(), diceIndex, large = false } = $props();
   
