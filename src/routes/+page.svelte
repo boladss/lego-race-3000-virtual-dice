@@ -2,6 +2,8 @@
   import FaceComponent from "../components/FaceComponent.svelte";
   import { PLAYER_NAMES, PLAYER_COLORS, type Dice, type Face, Piece, PieceType } from "$lib/types"
 
+  const TOTAL_MOVEMENT_PIECES = 7;
+
   /* 
   There are two main types of dice pieces: 
   (1) Movement pieces --- corresponds to a player
@@ -103,12 +105,35 @@
     }
 
     public nextSubturn(): void {
-      const nextPlayerIndex = (this.currentPlayerSubturn + 1) % this._players.length;
+      /* 
+      Given: 
+      (a) an empty space on the current dice face
+      (b) the player who rolled has NOT YET placed a movement piece on this face; AND
+      (c) the player who rolled still has pieces remaining
+      */
+     
+     console.log("POST-ROLL CHECKS:", 
+      this._dice[this._currentDiceFace].some(piece => piece instanceof EmptyPiece), 
+      this._players[this._currentPlayerTurn].piecesLeft, 
+      !this.currentPlayerPlacedPiece
+      )
       
-      // Check if subturns have finished (already back at player who rolled the dice)
-      if (nextPlayerIndex !== this._currentPlayerTurn) this._currentPlayerSubturn = nextPlayerIndex;
-      else game.nextTurn();
-      
+      const emptyPiece = new EmptyPiece();
+      if (
+        this._dice[this._currentDiceFace].some(piece => piece instanceof EmptyPiece) 
+        && this._players[this._currentPlayerTurn].piecesLeft > 0
+        && !this.currentPlayerPlacedPiece) 
+      {
+        alert("Place a movement piece first!")
+      }
+
+      else {
+        const nextPlayerIndex = (this.currentPlayerSubturn + 1) % this._players.length;
+  
+        // Check if subturns have finished (already back at player who rolled the dice)
+        if (nextPlayerIndex !== this._currentPlayerTurn) this._currentPlayerSubturn = nextPlayerIndex;
+        else game.nextTurn();
+      }
     }
 
     // Function to remove a player from the game (typically as they've already finished the lap)
@@ -122,7 +147,6 @@
       const randomIndex = Math.floor(Math.random() * this._dice.length);
       this._currentDiceFace = randomIndex;
       this._currentPlayerRolled = true;
-      console.log("ROLLED: ", this._currentPlayerRolled);
       // TODO: Handle mid-turn steps before going to the next player---this should be confirmed before handing to next
     }
 
@@ -161,7 +185,7 @@
       // Generate players from checklist
       let players: Player[] = [];
       for (let playerColor of selectedPlayers) {
-        let player: Player = new Player(playerColor, 7); // New player has 7 pieces by default
+        let player: Player = new Player(playerColor, TOTAL_MOVEMENT_PIECES); // New player has 7 pieces by default
         players.push(player);
       }
 
@@ -232,11 +256,11 @@
         </button>
       {/if}
 
-      <!-- Button to confirm subturns -->
+      <!-- Button to confirm subturns, in between rolling of dice -->
       {#if (game.currentPlayerRolled === true) }
         <button 
           onclick={() => game.nextSubturn()}
-          class="mb-2 p-4 bg-gray-200 rounded-lg hover:shadow-xl"
+          class="mb-10 p-4 bg-gray-200 rounded-lg hover:shadow-xl"
           >
           Confirm ({game.players[game.currentPlayerSubturn].name})
         </button>
