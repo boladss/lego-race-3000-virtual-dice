@@ -233,6 +233,18 @@
     }
   };
 
+  // Function to display the "Roll dice" button
+  function showRollButton(): boolean {
+    return ((game.currentPlayerTurn === game.currentPlayerSubturn) 
+      && (game.currentPlayerRolled === false)
+      && (game.gameState === "main"));
+  }
+
+  // Function to display "confirm" button
+  function showConfirmButton(): boolean {
+    return (game.currentPlayerRolled === true) || (game.gameState === "init");
+  }
+
   // TODO: Might not be necessary
   function gameLoop() {
     // Update UI
@@ -276,9 +288,7 @@
       </div>
 
       <!--  Button to roll dice! -->
-      {#if ((game.currentPlayerTurn === game.currentPlayerSubturn) 
-      && (game.currentPlayerRolled === false)
-      && (game.gameState === "main"))}
+      {#if showRollButton()}
         <button 
           onclick={() => game.rollDice()}
           class="mb-10 p-4 bg-gray-200 rounded-lg hover:shadow-xl"
@@ -288,7 +298,7 @@
       {/if}
 
       <!-- Button to confirm subturns, in between rolling of dice -->
-      {#if (game.currentPlayerRolled === true) || (game.gameState === "init")}
+      {#if showConfirmButton()}
         <button 
           onclick={() => game.nextSubturn()}
           class="mb-10 p-4 bg-gray-200 rounded-lg hover:shadow-xl"
