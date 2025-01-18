@@ -281,34 +281,24 @@
     <!-- Main face display -->
     {#if game.gameState === "init"} 
       <!-- Initialization --- shows both faces with turbo tiles -->
-      <div class="mb-10 space-x-10 flex flex-row ">
+      <div class="space-x-10 flex flex-row ">
         <FaceComponent game={game} bind:face={dice[0]} diceIndex={0} large={true}/>
         <FaceComponent game={game} bind:face={dice[5]} diceIndex={5} large={true}/>
       </div>
     {:else}
       <!-- Main game loop --- shows rolled dice face -->
-      <div class="mb-10">
+      <div>
         <FaceComponent game={game} bind:face={dice[game.currentDiceFace]} diceIndex={game.currentDiceFace} large={true}/>
       </div>
     {/if}
     
     <!-- Temporary debug menu; includes roll button -->
     <div class="container flex flex-col m-auto items-center">
-      <h2>Debug Menu</h2>
-      <div>
-        {game.players[game.currentPlayerTurn].name}  rolled {game.currentDiceFace} <br/>
-        {game.players[game.currentPlayerSubturn].name} currently moving <br/><br/>
-        <b>Pieces left:</b> <br/>
-        {#each game.players as player }
-          {player.name} {player.piecesLeft} <br/>
-        {/each}
-      </div>
-
       <!--  Button to roll dice! -->
       {#if showRollButton()}
         <button 
           onclick={() => game.rollDice()}
-          class="mb-10 p-4 bg-gray-200 rounded-lg hover:shadow-xl"
+          class="my-10 p-4 bg-gray-200 rounded-lg hover:shadow-xl"
           >
           Roll ({game.players[game.currentPlayerTurn].name})
         </button>
@@ -316,7 +306,7 @@
 
       <!-- Button to confirm subturns, in between rolling of dice -->
       {#if showConfirmButton()}
-      <div class="flex flex-row my-10 space-x-2">
+      <div class="flex flex-col my-10 space-y-2">
         <button 
           onclick={() => game.nextSubturn()}
           class="p-4 bg-gray-200 rounded-lg hover:shadow-xl"
@@ -325,22 +315,35 @@
         </button>
 
         {#if (game.gameState === "main")}
-          <button 
-          onclick={() => game.hitOilSlick()}
-          class="p-4 bg-gray-200 rounded-lg hover:shadow-xl"
-          >
-          Hit an oil slick?
-          </button>
+          <div class="flex flex-row space-x-2">
+            <button 
+              onclick={() => game.hitOilSlick()}
+              class="p-4 bg-gray-200 rounded-lg hover:shadow-xl"
+              >
+              Hit an oil slick?
+            </button>
 
-          <button 
-          onclick={() => game.takePitStop()}
-          class="p-4 bg-gray-200 rounded-lg hover:shadow-xl"
-          >
-          Taken pit stop?
-        </button>
+            <button 
+              onclick={() => game.takePitStop()}
+              class="p-4 bg-gray-200 rounded-lg hover:shadow-xl"
+              >
+              Taken pit stop?
+            </button>
+          </div>
         {/if}
+
       </div>
       {/if}
+
+      <h2><b>Debug Menu</b></h2>
+      <div>
+        {game.players[game.currentPlayerTurn].name}  rolled {game.currentDiceFace} <br/>
+        {game.players[game.currentPlayerSubturn].name} currently moving <br/><br/>
+        <b>Pieces left:</b> <br/>
+        {#each game.players as player }
+          {player.name} {player.piecesLeft} <br/>
+        {/each}
+      </div>
     </div>
     
     <!-- Display full dice -->
