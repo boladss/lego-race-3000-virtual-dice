@@ -303,7 +303,7 @@
           onclick={() => game.nextSubturn()}
           class="mb-10 p-4 bg-gray-200 rounded-lg hover:shadow-xl"
           >
-          Confirm ({game.players[game.currentPlayerSubturn].name})
+          End move ({game.players[game.currentPlayerSubturn].name})!
         </button>
       {/if}
     </div>
