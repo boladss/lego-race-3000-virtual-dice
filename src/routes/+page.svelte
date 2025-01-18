@@ -191,7 +191,7 @@
   let game: Race3000Game = $state({} as Race3000Game);
   let dice: Dice = $state([]);
   // let selectedPlayers: string[] = [];
-  let selectedPlayers: string[] = $state(["red", "green", "blue", "white"]);
+  let selectedPlayers: string[] = $state(PLAYER_NAMES);
   // let gameStarted: boolean = false;
   let gameStarted: boolean = $state(true);
   configGame();
@@ -279,9 +279,9 @@
     <div class="container flex flex-col m-auto items-center">
       <h2>Debug Menu</h2>
       <div>
-        Player {game.players[game.currentPlayerTurn].name}  rolled {game.currentDiceFace} <br/>
-        Player {game.players[game.currentPlayerSubturn].name} currently moving <br />
-        Pieces left: <br/>
+        {game.players[game.currentPlayerTurn].name}  rolled {game.currentDiceFace} <br/>
+        {game.players[game.currentPlayerSubturn].name} currently moving <br/><br/>
+        <b>Pieces left:</b> <br/>
         {#each game.players as player }
           {player.name} {player.piecesLeft} <br/>
         {/each}
@@ -335,7 +335,7 @@
         <label class="flex items-center">
           <input type="checkbox" bind:group={selectedPlayers} value={player} />
           <span class={`ml-2 ${PLAYER_COLORS[player].textColor} font-semibold`}>
-            {player.charAt(0).toUpperCase() + player.slice(1)}
+            {player}
           </span>
         </label>
       {/each}
