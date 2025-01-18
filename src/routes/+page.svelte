@@ -115,6 +115,7 @@
         (b) the player who rolled has NOT YET placed a movement piece on this face; AND
         (c) the player who rolled still has pieces remaining
         */
+
         if (
           this._dice[this._currentDiceFace].some(piece => piece instanceof EmptyPiece) 
           && this._players[this._currentPlayerTurn].piecesLeft > 0
@@ -151,8 +152,24 @@
           };
         }
       }
-      
+    }
 
+    public hitOilSlick(): void {
+      if (this._dice[this._currentDiceFace].some(piece => piece instanceof EmptyPiece)
+        && !this._currentPlayerPlacedPiece) {
+        alert("Place a movement piece first!");
+      } else {
+        alert(`Oil slick for ${this._players[this._currentPlayerSubturn].name}`);
+      }
+    }
+
+    public takePitStop(): void {
+      if (this._dice[this._currentDiceFace].some(piece => piece instanceof EmptyPiece)
+        && !this._currentPlayerPlacedPiece) {
+        alert("Place a movement piece first!");
+      } else {
+        alert(`Pit stop for ${this._players[this._currentPlayerSubturn].name}!`);
+      }
     }
 
     // Function to remove a player from the game (typically as they've already finished the lap)
@@ -299,12 +316,30 @@
 
       <!-- Button to confirm subturns, in between rolling of dice -->
       {#if showConfirmButton()}
+      <div class="flex flex-row my-10 space-x-2">
         <button 
           onclick={() => game.nextSubturn()}
-          class="mb-10 p-4 bg-gray-200 rounded-lg hover:shadow-xl"
+          class="p-4 bg-gray-200 rounded-lg hover:shadow-xl"
           >
           End move ({game.players[game.currentPlayerSubturn].name})!
         </button>
+
+        {#if (game.gameState === "main")}
+          <button 
+          onclick={() => game.hitOilSlick()}
+          class="p-4 bg-gray-200 rounded-lg hover:shadow-xl"
+          >
+          Hit an oil slick?
+          </button>
+
+          <button 
+          onclick={() => game.takePitStop()}
+          class="p-4 bg-gray-200 rounded-lg hover:shadow-xl"
+          >
+          Taken pit stop?
+        </button>
+        {/if}
+      </div>
       {/if}
     </div>
     
