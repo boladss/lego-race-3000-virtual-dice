@@ -61,7 +61,7 @@
     // Flags upon flags upon flags
     private _currentPlayerRolled: boolean = $state(true); // Defaults to true due to initialization
     private _currentPlayerPlacedPiece: boolean = $state(false); // Tongue twister
-    private _currentPlayerInitialPiece: boolean = $state(false); // These are such awful names
+    private _currentPlayerInitialPiece: boolean = $state(false);
 
     private _oilSlickRemovedPiece: boolean = $state(false);
 
@@ -150,12 +150,19 @@
       if (this._dice[this._currentDiceFace].some(piece => piece instanceof EmptyPiece)
         && !this._currentPlayerPlacedPiece) {
         alert("Place a movement piece first!");
-      } else {
+      } 
+
+      // Check if the player has any movement on the dice to remove
+      else if (this._players[this.currentPlayerSubturn].piecesLeft === TOTAL_MOVEMENT_PIECES) {
+        alert("No movement pieces to remove.")
+        this._oilSlickRemovedPiece = true;
+      } 
+      
+      // Remove piece for oil slick
+      else {
         // TODO: Temporary, just swaps between modes
         if (this._turnState === "move") this._turnState = "oil";
         else this._turnState = "move";
-
-        // TODO: Catch for when player has no movement pieces on the dice (nothing to remove)
       }
     }
 
@@ -190,7 +197,6 @@
       - replacing it with a turn movement piece
       */
       if (this._dice[this._currentDiceFace].every(piece => !(piece instanceof EmptyPiece))) {
-        console.log("Full face!");
         this._currentPlayerPlacedPiece = true; 
       }
     }
