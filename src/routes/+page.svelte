@@ -238,7 +238,7 @@
 
         // If taken pit stop (mode 1), replace a player's piece
         if (mode === "pit" && this._pitStopMode === 1) {
-          this._players[replacedPlayerIndex].piecesLeft++;
+          if (replacedPlayerIndex > -1) this._players[replacedPlayerIndex].piecesLeft++; // Catch for if player is no longer in player list
           this._pitStopReplacedPiece = true;
           this._turnState = "move";
         }
