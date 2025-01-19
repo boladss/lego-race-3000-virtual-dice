@@ -151,9 +151,11 @@
         && !this._currentPlayerPlacedPiece) {
         alert("Place a movement piece first!");
       } else {
-        // Temporary, just swaps between modes
+        // TODO: Temporary, just swaps between modes
         if (this._turnState === "move") this._turnState = "oil";
         else this._turnState = "move";
+
+        // TODO: Catch for when player has no movement pieces on the dice (nothing to remove)
 
         console.log("TURN STATE: ", this._turnState);
         alert(`Oil slick for ${this._players[this._currentPlayerSubturn].name}`);
@@ -167,6 +169,7 @@
         alert("Place a movement piece first!");
       } else {
         alert(`Pit stop for ${this._players[this._currentPlayerSubturn].name}!`);
+        // TODO: Pit stop logic
       }
     }
 
