@@ -3,7 +3,7 @@
   import { type Dice, type Face, Piece, PieceType, type GameState, type TurnState, EmptyPiece, SpecialPiece } from "$lib/types"
   import { PLAYER_NAMES, PLAYER_COLORS } from "$lib/players";
 
-  const TOTAL_MOVEMENT_PIECES = 7;
+  export const TOTAL_MOVEMENT_PIECES = 7;
 
   /* ##### ##### ##### ##### #####
   There are three main types of dice pieces: 
@@ -174,11 +174,19 @@
     }
 
     public takePitStop(): void {
+      // Check if the player has any movement on the dice to remove
+      if (this._players[this.currentPlayerSubturn].piecesLeft === 0) {
+        alert("No more pieces!")
+        this._pitStopReplacedPiece = true;
+      } 
+
       // Check if current player has already placed a movement piece for their turn (if valid space exists)
-      if (this._dice[this._currentDiceFace].some(piece => piece instanceof EmptyPiece)
+      else if (this._dice[this._currentDiceFace].some(piece => piece instanceof EmptyPiece)
         && !this._currentPlayerPlacedPiece) {
         alert("Place a movement piece first!");
-      } else {
+      } 
+
+      else {
         if (this._turnState === "move") this._turnState = "pit";
         else this._turnState = "move";
         
@@ -229,8 +237,11 @@
         this._players[playerIndex].piecesLeft--; // Subtract one piece from the player
 
         // If taken pit stop (mode 1), replace a player's piece
-        if (mode === "pit" && this._pitStopMode === 1) this._players[replacedPlayerIndex].piecesLeft++;
-        this._turnState = "move";
+        if (mode === "pit" && this._pitStopMode === 1) {
+          this._players[replacedPlayerIndex].piecesLeft++;
+          this._pitStopReplacedPiece = true;
+          this._turnState = "move";
+        }
 
         this._dice[diceIndex][pieceIndex] = movementPiece; // Update the movement piece
         if (this._gameState === "init") this._currentPlayerInitialPiece = true;
@@ -357,7 +368,7 @@
         {#if (game.gameState === "main")}
         <div class="flex flex-row space-x-2">
           <!-- Button to confirm hitting oil slick -->
-          {#if (!game.oilSlickRemovedPiece) && game.turnState !== "pit"}
+          {#if (!game.oilSlickRemovedPiece) && (game.turnState !== "pit")}
             <button onclick={() => game.hitOilSlick()} class="{button} {buttonHover} {game.turnState === "oil" ? "bg-red-200" : ""}">
               {game.turnState === "oil" ? "Cancel oil slick" : "Hit an oil slick?"}
             </button>
@@ -366,7 +377,7 @@
           {/if}
 
           <!-- Button to confirm taking of pit stop -->
-          {#if (game.turnState !== "oil")}
+          {#if (!game.pitStopReplacedPiece) && (game.turnState !== "oil")}
             <button onclick={() => game.takePitStop()} class="{button} {buttonHover} {game.turnState === "pit" ? "bg-red-200" : ""}">
               {game.turnState === "pit" ? "Cancel pit stop" : "Taken pit stop?"}
             </button>

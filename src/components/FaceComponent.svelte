@@ -1,6 +1,6 @@
 <script lang="ts">
   import { Piece, PieceType } from "$lib/types";
-  import { MovementPiece, Player } from "../routes/+page.svelte";
+  import { TOTAL_MOVEMENT_PIECES, MovementPiece, Player } from "../routes/+page.svelte";
   
   let { game, face = $bindable(), diceIndex, large = false } = $props();
 
@@ -48,7 +48,8 @@
     const replacedPlayerIndex = game.players.indexOf(replacedPlayer);
 
     if (!game.pitStopReplacedPiece) {
-      game.setDicePiece(game.currentPlayerSubturn, diceIndex, pieceIndex, "pit", replacedPlayerIndex);
+      if (noOtherPiecesOnBoard()) game.setDicePiece(game.currentPlayerSubturn, diceIndex, pieceIndex);
+      else game.setDicePiece(game.currentPlayerSubturn, diceIndex, pieceIndex, "pit", replacedPlayerIndex);
     } else alert("Already replaced a piece!");
     return;
   }
@@ -75,12 +76,26 @@
     return false;
   }
 
+  function noOtherPiecesOnBoard(): boolean {
+    const otherPlayers = game.players.filter((player: Player) => player !== game.players[game.currentPlayerSubturn]);
+    return otherPlayers.every((player: Player) => player.piecesLeft === TOTAL_MOVEMENT_PIECES);
+  }
+
   function isValidPitPiece(piece: Piece): boolean {
-    // Pretty much the same as isValidOilSlickPiece(), but highlights pieces other than the player's own
-    if (piece.type !== PieceType.Movement) return false;
-    if (piece.constructor.name === "MovementPiece") Object.setPrototypeOf(piece, MovementPiece.prototype);
-    if (piece instanceof MovementPiece) return piece.player !== game.players[game.currentPlayerSubturn];
-    return false;
+    // Check first if there exist other players' pieces on the board
+    // If all players' inventories are full, let the pit stopper place on any empty face
+    const clearDice = noOtherPiecesOnBoard();
+
+    if (clearDice) {
+      if (piece.type !== PieceType.Empty) return false;
+      return true;
+    } else {
+      // Pretty much the same as isValidOilSlickPiece(), but highlights pieces other than the player's own
+      if (piece.type !== PieceType.Movement) return false;
+      if (piece.constructor.name === "MovementPiece") Object.setPrototypeOf(piece, MovementPiece.prototype);
+      if (piece instanceof MovementPiece) return piece.player !== game.players[game.currentPlayerSubturn];
+      return false;
+    }
   }
 </script>
 
@@ -107,9 +122,12 @@
 <div class="{containerSmall}">
   <div class="{gridSmall}">
     {#each face as piece, pieceIndex}
+      <!-- Highlight pieces during an oil slick -->
       {#if (game.turnState === "oil") && isValidOilSlickPiece(piece)}
         <button onclick={() => removePieceHandler(pieceIndex)} class="{renderSmall} {piece.getColor()} {highlightEffects} {hoverEffects}" aria-label="Piece">
         </button>
+
+      <!-- Highlight pieces during a pit stop -->
       {:else if (game.turnState === "pit") && (game.pitStopMode === 1) && isValidPitPiece(piece)}
         <button onclick={() => replacePieceHandler(pieceIndex, piece.player)} class="{renderSmall} {piece.getColor()} {highlightEffects} {hoverEffects}" aria-label="Piece">
         </button>
