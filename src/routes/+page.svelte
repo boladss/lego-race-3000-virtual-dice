@@ -340,7 +340,9 @@
         {#if (game.gameState === "main")}
           <div class="flex flex-row space-x-2">
             {#if (!game.oilSlickRemovedPiece)}
-              <button onclick={() => game.hitOilSlick()} class="{button}">Hit an oil slick?</button>
+              <button onclick={() => game.hitOilSlick()} class="{button} {game.turnState === "oil" ? "bg-red-200" : ""}">
+                {game.turnState === "oil" ? "Cancel oil slick" : "Hit an oil slick?"}
+              </button>
             {:else}
               <button disabled class="{button} bg-gray-400 hover:cursor-not-allowed">Hit an oil slick?</button>
             {/if}
