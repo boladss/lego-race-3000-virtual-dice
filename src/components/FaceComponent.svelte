@@ -32,10 +32,24 @@
     }
   }
 
+  // Remove one of your own pieces from the board (oil slick)
   function removePieceHandler( pieceIndex: number ): void {
     if (!game.oilSlickRemovedPiece) {
       game.setDicePiece(game.currentPlayerSubturn, diceIndex, pieceIndex, "oil");
     } else alert("Already removed a piece!");
+    return;
+  }
+
+  // Replace a player's piece from the board
+  function replacePieceHandler( pieceIndex: number, replacedPlayer: Player ): void {
+    if (!game.checkPlayerPieces(game.currentPlayerTurn)) alert("No more pieces!");
+
+    //  Find player whose piece is going to be replaced
+    const replacedPlayerIndex = game.players.indexOf(replacedPlayer);
+
+    if (!game.pitStopReplacedPiece) {
+      game.setDicePiece(game.currentPlayerSubturn, diceIndex, pieceIndex, "pit", replacedPlayerIndex);
+    } else alert("Already replaced a piece!");
     return;
   }
 
@@ -58,6 +72,14 @@
     if (piece.constructor.name === "MovementPiece") Object.setPrototypeOf(piece, MovementPiece.prototype);
     // Update UI if valid piece
     if (piece instanceof MovementPiece) return piece.player === game.players[game.currentPlayerSubturn];
+    return false;
+  }
+
+  function isValidPitPiece(piece: Piece): boolean {
+    // Pretty much the same as isValidOilSlickPiece(), but highlights pieces other than the player's own
+    if (piece.type !== PieceType.Movement) return false;
+    if (piece.constructor.name === "MovementPiece") Object.setPrototypeOf(piece, MovementPiece.prototype);
+    if (piece instanceof MovementPiece) return piece.player !== game.players[game.currentPlayerSubturn];
     return false;
   }
 </script>
@@ -87,6 +109,9 @@
     {#each face as piece, pieceIndex}
       {#if (game.turnState === "oil") && isValidOilSlickPiece(piece)}
         <button onclick={() => removePieceHandler(pieceIndex)} class="{renderSmall} {piece.getColor()} {highlightEffects} {hoverEffects}" aria-label="Piece">
+        </button>
+      {:else if (game.turnState === "pit") && (game.pitStopMode === 1) && isValidPitPiece(piece)}
+        <button onclick={() => replacePieceHandler(pieceIndex, piece.player)} class="{renderSmall} {piece.getColor()} {highlightEffects} {hoverEffects}" aria-label="Piece">
         </button>
       {:else}
         <div class="{renderSmall} {piece.getColor()}"></div>
