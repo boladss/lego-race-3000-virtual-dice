@@ -330,6 +330,23 @@
     dice = game.dice;
   }
 
+   // Player selection and arranging
+   function movePlayerUp(index: number) {
+    if (index > 0) {
+      [selectedPlayers[index - 1], selectedPlayers[index]] = [selectedPlayers[index], selectedPlayers[index - 1]];
+    }
+  }
+  function movePlayerDown(index: number) {
+    if (index < selectedPlayers.length - 1) {
+      [selectedPlayers[index], selectedPlayers[index + 1]] = [selectedPlayers[index + 1], selectedPlayers[index]];
+    }
+  }
+  function togglePlayerSelection(player: string) {
+    if (selectedPlayers.includes(player)) selectedPlayers = selectedPlayers.filter((p) => p !== player);
+    else selectedPlayers = [...selectedPlayers, player];
+  }
+
+  // Universal styling
   const button: string = "p-4 bg-gray-200 rounded-lg";
   const buttonHover: string = "hover:shadow-xl";
 </script>
@@ -430,19 +447,39 @@
 
   <!-- Start a new game -->
   {:else}
-    <h2><b>Select Players</b></h2>
+  <!-- Player selection list -->
+  <h2><b>Available Players</b></h2>
+  <ul class="flex flex-col items-start mt-2 mb-4">
+    {#each PLAYER_NAMES as player}
+      <li class="flex items-center">
+        <input
+          type="checkbox"
+          checked={selectedPlayers.includes(player)}
+          onchange={() => togglePlayerSelection(player)}
+        />
+        <span class="ml-2 {PLAYER_COLORS[player].textColor} font-semibold">{player}</span>
+      </li>
+    {/each}
+  </ul>
 
-    <!-- List of possible players -->
-    <form class="flex flex-col items-start mt-4">
-      {#each PLAYER_NAMES as player}
-        <label class="flex items-center">
-          <input type="checkbox" bind:group={selectedPlayers} value={player} />
-          <span class={`ml-2 ${PLAYER_COLORS[player].textColor} font-semibold`}>
-            {player}
-          </span>
-        </label>
-      {/each}
-    </form>
+  <!-- Selected and rearranged players -->
+  <h2><b>Arrange Players</b></h2>
+  <ul class="flex flex-col items-start mt-2 space-y-1">
+    {#each selectedPlayers as player, index}
+      <li class="flex items-center space-x-1">
+        <button 
+          onclick={() => movePlayerUp(index)} 
+          disabled={index === 0} 
+          class="size-8 bg-gray-200 rounded-sm hover:shadow-md">▲</button>
+
+        <button 
+          onclick={() => movePlayerDown(index)} 
+          disabled={index === selectedPlayers.length - 1} 
+          class="size-8 bg-gray-200 rounded-sm hover:shadow-md">▼</button>
+        <span class="ml-2 {PLAYER_COLORS[player].textColor} font-semibold">{player}</span>
+      </li>
+    {/each}
+  </ul>
 
     <button 
       class="mt-10 {button}"
