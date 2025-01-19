@@ -262,11 +262,11 @@
   // Initialize values
   let game: Race3000Game = $state({} as Race3000Game);
   let dice: Dice = $state([]);
-  // let selectedPlayers: string[] = [];
-  let selectedPlayers: string[] = $state(PLAYER_NAMES);
-  // let gameStarted: boolean = false;
-  let gameStarted: boolean = $state(true);
-  configGame();
+  let selectedPlayers: string[] = $state([]);
+  // let selectedPlayers: string[] = $state(PLAYER_NAMES);
+  let gameStarted: boolean = $state(false);
+  // let gameStarted: boolean = $state(true);
+  // configGame();
   
   // Game configuration
   // TODO: Revert to player selection---skipping just for ease of testing
@@ -430,7 +430,7 @@
 
   <!-- Start a new game -->
   {:else}
-    <h2>Select Players</h2>
+    <h2><b>Select Players</b></h2>
 
     <!-- List of possible players -->
     <form class="flex flex-col items-start mt-4">
