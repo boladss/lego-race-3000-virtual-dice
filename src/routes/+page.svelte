@@ -156,9 +156,6 @@
         else this._turnState = "move";
 
         // TODO: Catch for when player has no movement pieces on the dice (nothing to remove)
-
-        console.log("TURN STATE: ", this._turnState);
-        alert(`Oil slick for ${this._players[this._currentPlayerSubturn].name}`);
       }
     }
 
@@ -330,32 +327,31 @@
       <!-- Button to confirm subturns, in between rolling of dice -->
       {#if showConfirmButton()}
       <div class="flex flex-col my-10 space-y-2">
-        <button 
-          onclick={() => game.nextSubturn()}
-          class="{button}"
-          >
-          End move ({game.players[game.currentPlayerSubturn].name})!
-        </button>
-
         {#if (game.gameState === "main")}
-          <div class="flex flex-row space-x-2">
-            {#if (!game.oilSlickRemovedPiece)}
+        <div class="flex flex-row space-x-2">
+          {#if (!game.oilSlickRemovedPiece)}
               <button onclick={() => game.hitOilSlick()} class="{button} {game.turnState === "oil" ? "bg-red-200" : ""}">
                 {game.turnState === "oil" ? "Cancel oil slick" : "Hit an oil slick?"}
               </button>
             {:else}
               <button disabled class="{button} bg-gray-400 hover:cursor-not-allowed">Hit an oil slick?</button>
-            {/if}
-
-            <button 
+              {/if}
+              
+              <button 
               onclick={() => game.takePitStop()}
               class="{button}"
               >
               Taken pit stop?
             </button>
           </div>
-        {/if}
-
+          {/if}
+          
+        <button 
+          onclick={() => game.nextSubturn()}
+          class="{button}"
+          >
+          End move ({game.players[game.currentPlayerSubturn].name})!
+        </button>
       </div>
       {/if}
 
