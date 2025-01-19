@@ -227,6 +227,10 @@
       dice[5][2] = new SpecialPiece("turbo");
       dice[5][3] = new SpecialPiece("turbo");
 
+      // Set shortcut tiles
+      dice[3][0] = new SpecialPiece("shortcut");
+      dice[3][2] = new SpecialPiece("shortcut");
+
       // Create instance of game
       game = new Race3000Game(players, dice);
       gameLoop();
