@@ -1,21 +1,16 @@
-<script lang="ts">
+<script module lang="ts">
   import FaceComponent from "../components/FaceComponent.svelte";
-  import { type Dice, type Face, Piece, PieceType, type GameState } from "$lib/types"
+  import { type Dice, type Face, Piece, PieceType, type GameState, type TurnState, EmptyPiece, SpecialPiece } from "$lib/types"
   import { PLAYER_NAMES, PLAYER_COLORS } from "$lib/players";
 
-  const TOTAL_MOVEMENT_PIECES = 7;
+  export const TOTAL_MOVEMENT_PIECES = 7;
 
-  /* 
-  There are two main types of dice pieces: 
+  /* ##### ##### ##### ##### #####
+  There are three main types of dice pieces: 
   (1) Movement pieces --- corresponds to a player
   (2) Special pieces --- does NOT correspond to a player (turbo, shortcut pieces)
-  */
-  export class EmptyPiece extends Piece {
-    constructor() {super(PieceType.Empty)}
-
-    getColor(): string { return "bg-stone-800"}
-  }
-
+  (3) Empty pieces --- empty pieces ...
+  ##### ##### ##### ##### ##### */
   export class MovementPiece extends Piece {
     public player: Player = {} as Player;
     constructor(player: Player) {
@@ -26,22 +21,9 @@
     getColor(): string { return this.player.getBgColor(); }
   }
 
-  export class SpecialPiece extends Piece {
-    public name: string = "";
-    constructor(name: string) {
-      super(PieceType.Special);
-      this.name = name;
-    }
-
-    getColor(): string { 
-      if (this.name === "turbo") return "bg-orange-500" ;
-      else return "bg-amber-300";
-    }
-  }
-
-  /*
+  /* ##### ##### ##### ##### #####
   Main class handling per-player logic
-  */
+  ##### ##### ##### ##### ##### */
 
   export class Player {
     public name: string;
@@ -63,9 +45,9 @@
     public getBgColor(): string { return PLAYER_COLORS[this.name].bgColor; }
   }
 
-  /*
+  /* ##### ##### ##### ##### #####
   Main class handling game logic
-  */
+  ##### ##### ##### ##### ##### */
   export class Race3000Game {
     private _players: Player[];
     private _dice: Dice = $state([]);
@@ -74,17 +56,17 @@
     private _currentDiceFace: number = $state(0);
 
     private _gameState: GameState = $state("init");
+    private _turnState: TurnState = $state("move");
 
     // Flags upon flags upon flags
     private _currentPlayerRolled: boolean = $state(true); // Defaults to true due to initialization
     private _currentPlayerPlacedPiece: boolean = $state(false); // Tongue twister
-    private _currentSubPlayerPlacedPiece: boolean = $state(false); // These are such awful names
+    private _currentPlayerInitialPiece: boolean = $state(false);
 
-    // Initialize game with list of players and the initial dice
-    constructor(players: Player[], dice: Dice) {
-      this._players = players;
-      this._dice = dice;
-    }
+    private _oilSlickRemovedPiece: boolean = $state(false);
+
+    private _pitStopMode: 1 | 2 = 1; // 1 = replace one tile; 2 = clear 2 faces
+    private _pitStopReplacedPiece: boolean = $state(false);
 
     // Getters
     public get players() { return this._players; }
@@ -92,10 +74,23 @@
     public get currentPlayerTurn() { return this._currentPlayerTurn; }
     public get currentPlayerSubturn() { return this._currentPlayerSubturn; }
     public get currentDiceFace() { return this._currentDiceFace; }
+    
     public get currentPlayerRolled() { return this._currentPlayerRolled; }
     public get currentPlayerPlacedPiece() { return this._currentPlayerPlacedPiece; }
-    public get currentSubPlayerPlacedPiece() { return this._currentSubPlayerPlacedPiece; }
+    public get currentPlayerInitialPiece() { return this._currentPlayerInitialPiece; }
+
+    public get oilSlickRemovedPiece() { return this._oilSlickRemovedPiece; }
+    public get pitStopMode() { return this._pitStopMode; }
+    public get pitStopReplacedPiece() { return this._pitStopReplacedPiece; }
+
     public get gameState() { return this._gameState; }
+    public get turnState() { return this._turnState; }
+
+    // Initialize game with list of players and the initial dice
+    constructor(players: Player[], dice: Dice) {
+      this._players = players;
+      this._dice = dice;
+    }
 
     // Function to set next player's turn
     public nextTurn(): void {
@@ -115,6 +110,7 @@
         (b) the player who rolled has NOT YET placed a movement piece on this face; AND
         (c) the player who rolled still has pieces remaining
         */
+
         if (
           this._dice[this._currentDiceFace].some(piece => piece instanceof EmptyPiece) 
           && this._players[this._currentPlayerTurn].piecesLeft > 0
@@ -122,6 +118,9 @@
         {
           alert("Place a movement piece first!");
         } else {
+          this._oilSlickRemovedPiece = false; // Reset oil slick flag
+          this._pitStopReplacedPiece = false; // Reset pit stop flag
+          this._turnState = "move";
           const nextPlayerIndex = (this.currentPlayerSubturn + 1) % this._players.length;
     
           // Check if subturns have finished (already back at player who rolled the dice)
@@ -132,10 +131,10 @@
 
       // Initialization state --- place movement tiles alongside turbo tiles
       else if (this._gameState === "init") {
-        if ( !this._currentSubPlayerPlacedPiece ) {
+        if ( !this._currentPlayerInitialPiece ) {
           alert("Place a movement piece first!");
         } else {
-          this._currentSubPlayerPlacedPiece = false;
+          this._currentPlayerInitialPiece = false;
           const nextPlayerIndex = (this.currentPlayerSubturn + 1) % this._players.length;
 
           // Check if subturns have finished (already back at player who rolled the dice)
@@ -151,8 +150,48 @@
           };
         }
       }
-      
+    }
 
+    public hitOilSlick(): void {
+      // Check if current player has already placed a movement piece for their turn (if valid space exists)
+      if (this._dice[this._currentDiceFace].some(piece => piece instanceof EmptyPiece)
+        && !this._currentPlayerPlacedPiece) {
+        alert("Place a movement piece first!");
+      } 
+
+      // Check if the player has any movement on the dice to remove
+      else if (this._players[this.currentPlayerSubturn].piecesLeft === TOTAL_MOVEMENT_PIECES) {
+        alert("No movement pieces to remove.")
+        this._oilSlickRemovedPiece = true;
+      } 
+      
+      // Remove piece for oil slick
+      else {
+        // TODO: Temporary, just swaps between modes
+        if (this._turnState === "move") this._turnState = "oil";
+        else this._turnState = "move";
+      }
+    }
+
+    public takePitStop(): void {
+      // Check if the player has any movement on the dice to remove
+      if (this._players[this.currentPlayerSubturn].piecesLeft === 0) {
+        alert("No more pieces!")
+        this._pitStopReplacedPiece = true;
+      } 
+
+      // Check if current player has already placed a movement piece for their turn (if valid space exists)
+      else if (this._dice[this._currentDiceFace].some(piece => piece instanceof EmptyPiece)
+        && !this._currentPlayerPlacedPiece) {
+        alert("Place a movement piece first!");
+      } 
+
+      else {
+        if (this._turnState === "move") this._turnState = "pit";
+        else this._turnState = "move";
+        
+        // TODO: Allow player to place dice piece anywhere if there are no opponent movement tiles on the dice
+      }
     }
 
     // Function to remove a player from the game (typically as they've already finished the lap)
@@ -166,15 +205,48 @@
       const randomIndex = Math.floor(Math.random() * this._dice.length);
       this._currentDiceFace = randomIndex;
       this._currentPlayerRolled = true;
+
+      /* 
+      When initial dice face is already full, mark the current player as having placed a piece.
+      This prevents misordering of sub-moves, e.g.,
+      - hitting an oil slick first
+      - removing a piece from the current face
+      - replacing it with a turn movement piece
+      */
+      if (this._dice[this._currentDiceFace].every(piece => !(piece instanceof EmptyPiece))) {
+        this._currentPlayerPlacedPiece = true; 
+      }
     }
 
     // Function to replace a piece on the current face
-    public setDicePiece(playerIndex: number, diceIndex: number, pieceIndex: number): void {
-      const movementPiece = new MovementPiece(this._players[playerIndex]);
-      this._players[playerIndex].piecesLeft--; // Subtract one piece from the player
-      this._dice[diceIndex][pieceIndex] = movementPiece; // Update the movement piece
-      if (this._gameState === "init") this._currentSubPlayerPlacedPiece = true;
-      else this._currentPlayerPlacedPiece = true;
+    public setDicePiece(
+      playerIndex: number, diceIndex: number, pieceIndex: number, 
+      mode: null | "oil" | "pit" = null,
+      replacedPlayerIndex: number = 0,
+    ): void {
+      if (mode === "oil") {
+        // Removing dice piece upon oil slick
+        const emptyPiece = new EmptyPiece();
+        this._players[playerIndex].piecesLeft++; // Add another free piece to the player
+        this._dice[diceIndex][pieceIndex] = emptyPiece; // Update empty piece
+        this._oilSlickRemovedPiece = true;
+        this._turnState = "move";
+      } else {
+        // Placing a player movement piece
+        const movementPiece = new MovementPiece(this._players[playerIndex]);
+        this._players[playerIndex].piecesLeft--; // Subtract one piece from the player
+
+        // If taken pit stop (mode 1), replace a player's piece
+        if (mode === "pit" && this._pitStopMode === 1) {
+          if (replacedPlayerIndex > -1) this._players[replacedPlayerIndex].piecesLeft++; // Catch for if player is no longer in player list
+          this._pitStopReplacedPiece = true;
+          this._turnState = "move";
+        }
+
+        this._dice[diceIndex][pieceIndex] = movementPiece; // Update the movement piece
+        if (this._gameState === "init") this._currentPlayerInitialPiece = true;
+        else this._currentPlayerPlacedPiece = true;
+      }
       return;
     }
 
@@ -183,9 +255,9 @@
     }
   }
 
-  /*
+  /* ##### ##### ##### ##### #####
   Game initialization!
-  */
+  ##### ##### ##### ##### ##### */
 
   // Initialize values
   let game: Race3000Game = $state({} as Race3000Game);
@@ -257,6 +329,9 @@
     // Update display dice
     dice = game.dice;
   }
+
+  const button: string = "p-4 bg-gray-200 rounded-lg";
+  const buttonHover: string = "hover:shadow-xl";
 </script>
 
 
@@ -268,20 +343,64 @@
     <!-- Main face display -->
     {#if game.gameState === "init"} 
       <!-- Initialization --- shows both faces with turbo tiles -->
-      <div class="mb-10 space-x-10 flex flex-row ">
+      <div class="space-x-10 flex flex-row ">
         <FaceComponent game={game} bind:face={dice[0]} diceIndex={0} large={true}/>
         <FaceComponent game={game} bind:face={dice[5]} diceIndex={5} large={true}/>
       </div>
     {:else}
       <!-- Main game loop --- shows rolled dice face -->
-      <div class="mb-10">
+      <div>
         <FaceComponent game={game} bind:face={dice[game.currentDiceFace]} diceIndex={game.currentDiceFace} large={true}/>
       </div>
     {/if}
     
     <!-- Temporary debug menu; includes roll button -->
     <div class="container flex flex-col m-auto items-center">
-      <h2>Debug Menu</h2>
+      <!--  Button to roll dice! -->
+      {#if showRollButton()}
+        <button 
+          onclick={() => game.rollDice()}
+          class="my-10 {button}"
+          >
+          Roll ({game.players[game.currentPlayerTurn].name})
+        </button>
+      {/if}
+
+      <!-- Button to confirm subturns, in between rolling of dice -->
+      {#if showConfirmButton()}
+      <div class="flex flex-col my-10 space-y-2">
+        {#if (game.gameState === "main")}
+        <div class="flex flex-row space-x-2">
+          <!-- Button to confirm hitting oil slick -->
+          {#if (!game.oilSlickRemovedPiece) && (game.turnState !== "pit")}
+            <button onclick={() => game.hitOilSlick()} class="{button} {buttonHover} {game.turnState === "oil" ? "bg-red-200" : ""}">
+              {game.turnState === "oil" ? "Cancel oil slick" : "Hit an oil slick?"}
+            </button>
+          {:else}
+            <button disabled class="{button} bg-gray-400 hover:cursor-not-allowed">Hit an oil slick?</button>
+          {/if}
+
+          <!-- Button to confirm taking of pit stop -->
+          {#if (!game.pitStopReplacedPiece) && (game.turnState !== "oil")}
+            <button onclick={() => game.takePitStop()} class="{button} {buttonHover} {game.turnState === "pit" ? "bg-red-200" : ""}">
+              {game.turnState === "pit" ? "Cancel pit stop" : "Taken pit stop?"}
+            </button>
+          {:else}
+            <button disabled class="{button} bg-gray-400 hover:cursor-not-allowed">Taken pit stop?</button>
+          {/if}
+        </div>
+        {/if}
+          
+        <button 
+          onclick={() => game.nextSubturn()}
+          class="{button}"
+          >
+          End move ({game.players[game.currentPlayerSubturn].name})!
+        </button>
+      </div>
+      {/if}
+
+      <h2><b>Debug Menu</b></h2>
       <div>
         {game.players[game.currentPlayerTurn].name}  rolled {game.currentDiceFace} <br/>
         {game.players[game.currentPlayerSubturn].name} currently moving <br/><br/>
@@ -290,26 +409,6 @@
           {player.name} {player.piecesLeft} <br/>
         {/each}
       </div>
-
-      <!--  Button to roll dice! -->
-      {#if showRollButton()}
-        <button 
-          onclick={() => game.rollDice()}
-          class="mb-10 p-4 bg-gray-200 rounded-lg hover:shadow-xl"
-          >
-          Roll ({game.players[game.currentPlayerTurn].name})
-        </button>
-      {/if}
-
-      <!-- Button to confirm subturns, in between rolling of dice -->
-      {#if showConfirmButton()}
-        <button 
-          onclick={() => game.nextSubturn()}
-          class="mb-10 p-4 bg-gray-200 rounded-lg hover:shadow-xl"
-          >
-          End move ({game.players[game.currentPlayerSubturn].name})!
-        </button>
-      {/if}
     </div>
     
     <!-- Display full dice -->
@@ -346,7 +445,7 @@
     </form>
 
     <button 
-      class="mt-10 p-4 bg-gray-200 rounded-lg hover:shadow-xl"
+      class="mt-10 {button}"
       onclick={configGame} 
       aria-label="Start a new game"
     >Start a new game!</button>
