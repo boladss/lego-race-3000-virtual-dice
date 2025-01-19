@@ -16,7 +16,7 @@
   function selectPieceHandler( pieceIndex: number ) {
     switch (game.gameState) {
       case "init": {
-        if (!game.currentSubPlayerPlacedPiece) {
+        if (!game.currentPlayerInitialPiece) {
           game.setDicePiece(game.currentPlayerSubturn, diceIndex, pieceIndex);
         } else alert("Already placed a piece!");
         return;
@@ -36,7 +36,7 @@
     if (piece.type !== PieceType.Empty) return false;
     if (!game.currentPlayerRolled) return false;
     switch (game.gameState) {
-      case "init": return !game.currentSubPlayerPlacedPiece;
+      case "init": return !game.currentPlayerInitialPiece;
       case "main": return !game.currentPlayerPlacedPiece;
       default: return false;
     }

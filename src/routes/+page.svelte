@@ -78,7 +78,7 @@
     // Flags upon flags upon flags
     private _currentPlayerRolled: boolean = $state(true); // Defaults to true due to initialization
     private _currentPlayerPlacedPiece: boolean = $state(false); // Tongue twister
-    private _currentSubPlayerPlacedPiece: boolean = $state(false); // These are such awful names
+    private _currentPlayerInitialPiece: boolean = $state(false); // These are such awful names
 
     // Initialize game with list of players and the initial dice
     constructor(players: Player[], dice: Dice) {
@@ -92,9 +92,10 @@
     public get currentPlayerTurn() { return this._currentPlayerTurn; }
     public get currentPlayerSubturn() { return this._currentPlayerSubturn; }
     public get currentDiceFace() { return this._currentDiceFace; }
+    
     public get currentPlayerRolled() { return this._currentPlayerRolled; }
     public get currentPlayerPlacedPiece() { return this._currentPlayerPlacedPiece; }
-    public get currentSubPlayerPlacedPiece() { return this._currentSubPlayerPlacedPiece; }
+    public get currentPlayerInitialPiece() { return this._currentPlayerInitialPiece; }
     public get gameState() { return this._gameState; }
 
     // Function to set next player's turn
@@ -133,10 +134,10 @@
 
       // Initialization state --- place movement tiles alongside turbo tiles
       else if (this._gameState === "init") {
-        if ( !this._currentSubPlayerPlacedPiece ) {
+        if ( !this._currentPlayerInitialPiece ) {
           alert("Place a movement piece first!");
         } else {
-          this._currentSubPlayerPlacedPiece = false;
+          this._currentPlayerInitialPiece = false;
           const nextPlayerIndex = (this.currentPlayerSubturn + 1) % this._players.length;
 
           // Check if subturns have finished (already back at player who rolled the dice)
@@ -190,7 +191,7 @@
       const movementPiece = new MovementPiece(this._players[playerIndex]);
       this._players[playerIndex].piecesLeft--; // Subtract one piece from the player
       this._dice[diceIndex][pieceIndex] = movementPiece; // Update the movement piece
-      if (this._gameState === "init") this._currentSubPlayerPlacedPiece = true;
+      if (this._gameState === "init") this._currentPlayerInitialPiece = true;
       else this._currentPlayerPlacedPiece = true;
       return;
     }
