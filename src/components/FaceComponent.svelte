@@ -11,8 +11,8 @@
   const gridSmall: string = 'grid grid-cols-2 grid-rows-2 shadow-[0_0_5px_0px]';
   const renderLarge: string = 'size-16 shadow-md';
   const renderSmall: string = 'size-8 shadow-sm';
-  const hoverEffects: string = 'hover:shadow-[0_0_5px_5px_red] hover:z-10'
-  const highlightEffects: string = 'shadow-[0_0_3px_3px_red] z-10'
+  const hoverEffects: string = 'hover:shadow-[0_0_5px_5px_red] hover:z-10';
+  const highlightEffects: string = 'shadow-[0_0_5px_3px_red] z-10';
 
   // Handle event when player wants to replace a piece on the dice
   function selectPieceHandler( pieceIndex: number ) {
