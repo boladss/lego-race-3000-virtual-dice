@@ -93,7 +93,7 @@
     }
 
     // Function to set next player's turn
-    public nextTurn(): void {
+    private nextTurn(): void {
       this._currentPlayerTurn = (this._currentPlayerTurn + 1) % this._players.length;
       this._currentPlayerSubturn = this._currentPlayerTurn;
       
@@ -101,7 +101,20 @@
       this._currentPlayerPlacedPiece = false;
     }
 
-    public nextSubturn(): void {
+    // Function to set next player's subturn
+    private nextSubturn(): void {
+      this._oilSlickRemovedPiece = false; // Reset oil slick flag
+      this._pitStopReplacedPiece = false; // Reset pit stop flag
+      this._turnState = "move";
+      const nextPlayerIndex = (this.currentPlayerSubturn + 1) % this._players.length;
+
+      // Check if subturns have finished (already back at player who rolled the dice)
+      if (nextPlayerIndex !== this._currentPlayerTurn) this._currentPlayerSubturn = nextPlayerIndex;
+      else game.nextTurn();
+    }
+
+    // Handles most of the logic needed before confirming with nextSubturn()
+    public handleNextSubturn(): void {
       // Main gameplay loop
       if (this._gameState === "main") {
         /* 
@@ -110,7 +123,6 @@
         (b) the player who rolled has NOT YET placed a movement piece on this face; AND
         (c) the player who rolled still has pieces remaining
         */
-
         if (
           this._dice[this._currentDiceFace].some(piece => piece instanceof EmptyPiece) 
           && this._players[this._currentPlayerTurn].piecesLeft > 0
@@ -118,14 +130,7 @@
         {
           alert("Place a movement piece first!");
         } else {
-          this._oilSlickRemovedPiece = false; // Reset oil slick flag
-          this._pitStopReplacedPiece = false; // Reset pit stop flag
-          this._turnState = "move";
-          const nextPlayerIndex = (this.currentPlayerSubturn + 1) % this._players.length;
-    
-          // Check if subturns have finished (already back at player who rolled the dice)
-          if (nextPlayerIndex !== this._currentPlayerTurn) this._currentPlayerSubturn = nextPlayerIndex;
-          else game.nextTurn();
+          this.nextSubturn();
         }
       }
 
@@ -409,7 +414,7 @@
         {/if}
           
         <button 
-          onclick={() => game.nextSubturn()}
+          onclick={() => game.handleNextSubturn()}
           class="{button}"
           >
           End move ({game.players[game.currentPlayerSubturn].name})!
