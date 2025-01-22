@@ -93,10 +93,13 @@
     }
 
     // Function to set next player's turn
-    private nextTurn(): void {
-      this._currentPlayerTurn = (this._currentPlayerTurn + 1) % this._players.length;
-      this._currentPlayerSubturn = this._currentPlayerTurn;
-      
+    private nextTurn(forceIndex: null | number = null): void {
+      // Force index to certain value --- such as after initialization
+      if (forceIndex !== null) this._currentPlayerTurn = forceIndex;
+      else this._currentPlayerTurn = (this._currentPlayerTurn + 1) % this._players.length;
+      this._currentPlayerSubturn = this._currentPlayerTurn; // Reset subturn
+
+      // Reset flags
       this._currentPlayerRolled = false;
       this._currentPlayerPlacedPiece = false;
     }
@@ -147,11 +150,7 @@
           else {
             // Finish initialization, transfer to main game state
             this._gameState = "main";
-            
-            // Can't use nextTurn() as that would give the first turn to player 2; need to assign
-            this._currentPlayerSubturn = this._currentPlayerTurn;
-            this._currentPlayerRolled = false;
-            this._currentPlayerPlacedPiece = false;
+            this.nextTurn(0);
           };
         }
       }
