@@ -382,7 +382,7 @@
         <button 
           onclick={() => game.rollDice()}
           class="my-10 {button} font-semibold
-          {PLAYER_COLORS[game.players[game.currentPlayerSubturn].name].bgColor}"
+          {game.players[game.currentPlayerTurn].getBgColor()}"
           >
           Roll ({game.players[game.currentPlayerTurn].name})
         </button>
@@ -416,7 +416,7 @@
         <button 
           onclick={() => game.handleNextSubturn()}
           class="{button} font-semibold
-          {PLAYER_COLORS[game.players[game.currentPlayerSubturn].name].bgColor}"
+          {game.players[game.currentPlayerSubturn].getBgColor()}"
           >
           End move ({game.players[game.currentPlayerSubturn].name})!
         </button>
