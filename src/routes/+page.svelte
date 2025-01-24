@@ -351,7 +351,7 @@
   }
 
   // Universal styling
-  const button: string = "p-4 bg-gray-200 rounded-lg";
+  const button: string = "p-4 rounded-lg shadow-md";
   const buttonHover: string = "hover:shadow-xl";
 </script>
 
